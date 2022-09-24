@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="dear imgui">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/../../../../External Libraries/dear imgui" />
+    </CLASSES>
+    <JAVADOC />
+    <NATIVE>
+      <root url="file://$PROJECT_DIR$/../../../../External Libraries/dear imgui" />
+    </NATIVE>
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../../../../External Libraries/dear imgui" />
+    </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/../../../../External Libraries/dear imgui" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/../../../../External Libraries/dear imgui" recursive="false" type="SOURCES" />
+  </library>
+</component>
