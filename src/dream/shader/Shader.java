@@ -146,15 +146,16 @@ public class Shader
         return glGetUniformLocation(this.programID, name);
     }
 
-    public void storeUniforms(String... uniforms) throws Exception
+    public void storeUniforms(String... uniforms)
     {
         for(String uniform : uniforms)
         {
             int location = uniformLocation(uniform);
             if(location == notFound)
             {
-                throw new Exception("Uniform " + uniform + " could not be located in the shader! " +
+                System.err.println("Uniform " + uniform + " could not be located in the shader! " +
                         "Check whether it was used in the shader code or perhaps it was spelt wrongly");
+                continue;
             }
             this.uniformVariables.put(uniform, location);
         }

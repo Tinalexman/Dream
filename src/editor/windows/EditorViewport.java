@@ -1,66 +1,53 @@
 package editor.windows;
 
-import dream.events.Event;
-import dream.events.EventManager;
-import dream.events.EventType;
-import dream.events.handler.Handler;
-import dream.events.type.WindowResize;
 import dream.graphics.icon.Icons;
-import dream.graphics.mesh.Mesh;
 import dream.io.FrameBuffer;
 import dream.managers.ResourcePool;
 import dream.managers.WindowManager;
+import dream.node.Node;
 import dream.scene.Scene;
 import dream.shader.Shader;
+import editor.util.WindowRenderer;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
 
-public class EditorViewport extends EditorWindow implements Handler
-{
-    private FrameBuffer frameBuffer;
-    private Shader shader;
-    private Mesh mesh;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
 
-    private float previousWidth;
-    private float previousHeight;
-    private float previousPosX;
-    private float previousPosY;
+public class EditorViewport extends EditorWindow
+{
+    private final float[] position;
+    private final float[] size;
 
     private final int menuIcon;
+
+    private final WindowRenderer windowRenderer;
+
 
     public EditorViewport()
     {
         super("Viewport");
 
-        int[] size = WindowManager.getMainSize();
-        this.frameBuffer = new FrameBuffer(size[0], size[1]);
         this.windowFlags = ImGuiWindowFlags.NoScrollbar |
                 ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.MenuBar;
         this.menuIcon = ResourcePool.getIcon(Icons.menu);
 
-        EventManager.add(EventType.WindowResize, this);
-    }
+        this.position = new float[] {0.0f, 0.0f};
+        this.size = new float[] {0.0f, 0.0f};
 
-    @Override
-    public void respond(Event event)
-    {
-        if(event.type == EventType.WindowResize)
-        {
-            WindowResize w = (WindowResize) event;
-            if(w.minimized())
-                return;
-
-            this.frameBuffer.destroy();
-            this.frameBuffer = new FrameBuffer(w.width, w.height);
-        }
+        this.windowRenderer = new WindowRenderer(position, size);
     }
 
     @Override
     public void show()
     {
+        this.windowRenderer.render();
+
         this.isActive = ImGui.begin(this.title, windowFlags);
 
         ImVec2 framebufferSizeInWindow = getLargestSizeForViewPort();
@@ -85,27 +72,32 @@ public class EditorViewport extends EditorWindow implements Handler
         }
         ImGui.popStyleColor();
 
-        viewScene(null);
-
         ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, 0.0f, 0.0f);
-        ImGui.image(this.frameBuffer.getID(), framebufferSizeInWindow.x, framebufferSizeInWindow.y, 0, 1, 1, 0);
+        ImGui.image(this.windowRenderer.getID(), framebufferSizeInWindow.x, framebufferSizeInWindow.y, 0, 1, 1, 0);
         ImGui.popStyleVar();
 
         if(hasChanged(actualWindowSize, actualWindowPosition))
         {
-            this.previousWidth = actualWindowSize.x;
-            this.previousHeight = actualWindowSize.y;
+            size[0] = framebufferSizeInWindow.x;
+            size[1] = framebufferSizeInWindow.y;
 
-            this.previousPosX = actualWindowPosition.x;
-            this.previousPosY = actualWindowPosition.y;
+            position[0] = actualWindowPosition.x + framebufferPositionInWindow.x;
+            position[1] = actualWindowPosition.y + framebufferPositionInWindow.y;
         }
 
         ImGui.end();
     }
 
-    public FrameBuffer getFrameBuffer()
+    public void setScene(Scene scene)
     {
-        return this.frameBuffer;
+        this.windowRenderer.setScene(scene);
+    }
+
+    @Override
+    public void input()
+    {
+        if(this.isActive)
+            this.windowRenderer.input();
     }
 
     private ImVec2 getCenteredPositionForViewPort(ImVec2 aspectSize)
@@ -141,21 +133,42 @@ public class EditorViewport extends EditorWindow implements Handler
 
     private boolean hasChanged(ImVec2 newWindowSize, ImVec2 newWindowPos)
     {
-        boolean equalSize = (this.previousWidth == newWindowSize.x)
-                && (this.previousHeight == newWindowSize.y);
+        boolean equalSize = (this.size[0] == newWindowSize.x)
+                && (this.size[1] == newWindowSize.y);
 
-        boolean samePosition = (this.previousPosX == newWindowPos.x)
-                && (this.previousPosY == newWindowPos.y);
+        boolean samePosition = (this.position[0] == newWindowPos.x)
+                && (this.position[1] == newWindowPos.y);
 
         return !(equalSize && samePosition);
     }
 
-    public void viewScene(Scene scene)
-    {
-        this.frameBuffer.start();
-
-
-
-        this.frameBuffer.stop();
-    }
+//    private void postProcess()
+//    {
+//        if(this.currentFilter.val.equals("None"))
+//        {
+//            this.framebufferJoin.val = this.colorBuffer.getTextureID();
+//            return;
+//        }
+//
+//        this.framebufferJoin.val = this.postProcessBuffer.getTextureID();
+//
+//        this.postProcessBuffer.onEnable();
+//        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+//        glClear(GL_COLOR_BUFFER_BIT);
+//
+//        Shader shader = Filter.filters.get(this.currentFilter.val);
+//        shader.start();
+//        postProcessMesh.onEnable();
+//
+//        glDisable(GL_DEPTH_TEST);
+//        glActiveTexture(GL_TEXTURE0);
+//        glBindTexture(GL_TEXTURE_2D, this.colorBuffer.getTextureID());
+//        glDrawElements(GL_TRIANGLES, postProcessMesh.getVertexCount(), GL_UNSIGNED_INT, 0);
+//
+//        postProcessMesh.onDisable();
+//        shader.stop();
+//
+//        this.postProcessBuffer.onDisable();
+//    }
 }
+

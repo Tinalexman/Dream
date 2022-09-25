@@ -21,18 +21,17 @@ public class Gui
 {
     private final ImGuiImplGl3 imGuiGl3;
     private final ImGuiImplGlfw imGuiGlfw;
-    private final Map<String, Runnable> mainMenuCallBacks;
+    private Runnable mainMenuBar;
 
     public Gui()
     {
         this.imGuiGl3 = new ImGuiImplGl3();
         this.imGuiGlfw = new ImGuiImplGlfw();
-        this.mainMenuCallBacks = new HashMap<>();
     }
 
-    public void addMenuBarCallBack(String menuName, Runnable callback)
+    public void setMenuBarCallBack(Runnable callback)
     {
-        this.mainMenuCallBacks.put(menuName, callback);
+       this.mainMenuBar = callback;
     }
 
     public void create(long windowID)
@@ -194,39 +193,7 @@ public class Gui
 
         ImGui.begin("DockSpace Window", new ImBoolean(true), windowFlags);
 
-        if(ImGui.beginMenuBar())
-        {
-            if(ImGui.beginMenu("Home"))
-            {
-                if(ImGui.menuItem("New Project", "Ctrl + N"))
-                    this.mainMenuCallBacks.getOrDefault("New Project", () -> {}).run();
-
-                if(ImGui.menuItem("Open Project", "Ctrl + O"))
-                    this.mainMenuCallBacks.getOrDefault("Open Project", () -> {}).run();
-
-                ImGui.separator();
-
-                if(ImGui.menuItem("Save Project", "Ctrl + S"))
-                    this.mainMenuCallBacks.getOrDefault("Save Project", () -> {}).run();
-
-                ImGui.separator();
-
-                if(ImGui.menuItem("Quit"))
-                    this.mainMenuCallBacks.getOrDefault("Quit", () -> {}).run();
-
-                ImGui.endMenu();
-            }
-
-            if(ImGui.beginMenu("Preferences"))
-            {
-                if(ImGui.menuItem("Engine Settings", "Ctrl + Alt + S"))
-                    this.mainMenuCallBacks.getOrDefault("Engine Settings", () -> {}).run();
-
-                ImGui.endMenu();
-            }
-
-            ImGui.endMenuBar();
-        }
+        this.mainMenuBar.run();
 
         ImGui.dockSpace(ImGui.getID("DockSpace"));
 

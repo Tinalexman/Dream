@@ -1,4 +1,4 @@
-package dream.constants;
+package dream.shader;
 
 public class ShaderConstants
 {

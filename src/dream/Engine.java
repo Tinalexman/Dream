@@ -15,6 +15,7 @@ public class Engine
     public static final long inverseNanoseconds = 1000000000L;
     public static float frameRate = 1000F;
     public static final float frameTime = 1 / frameRate;
+    public static float deltaTime = 0.0f;
     public static int framesPerSecond;
     public static int frames = 0;
 
@@ -36,13 +37,14 @@ public class Engine
 
     private static void preLoop()
     {
-        Input.initialize();
-
         long mainWindowID = WindowManager.initialize();
+
+        Input.initialize(mainWindowID);
 
         ResourcePool.loadIcons();
 
-        Engine.editor = new Editor(mainWindowID);
+        Engine.editor = new Editor();
+        Engine.editor.initialize(mainWindowID);
     }
 
     private static void loop()
@@ -57,11 +59,11 @@ public class Engine
         while(Engine.isRunning)
         {
             long startTime = System.nanoTime();
-            long delta = startTime - lastTime;
+            Engine.deltaTime = startTime - lastTime;
             lastTime = startTime;
 
-            unprocessedTime += (delta * nanoSeconds);
-            frameCounter += delta;
+            unprocessedTime += (Engine.deltaTime * nanoSeconds);
+            frameCounter += Engine.deltaTime;
 
             handleInput();
 
@@ -80,7 +82,7 @@ public class Engine
 
             if(render)
             {
-                updateState((float) (delta * nanoSeconds));
+                updateState((float) (Engine.deltaTime * nanoSeconds));
                 frames++;
             }
 

@@ -7,14 +7,14 @@ import imgui.ImVec2;
 import imgui.flag.ImGuiTreeNodeFlags;
 import imgui.type.ImString;
 
-public class EditorSettings extends Modal<Void>
+public class EngineSettings extends Modal<Void>
 {
     private final ImString filteredText = new ImString();
     private final int defaultTreeFlags = ImGuiTreeNodeFlags.OpenOnArrow
         | ImGuiTreeNodeFlags.OpenOnDoubleClick
         | ImGuiTreeNodeFlags.DefaultOpen;
 
-    public EditorSettings()
+    public EngineSettings()
     {
         super("Settings", "Change the settings of the engine.");
         this.isActive = false;
@@ -61,6 +61,10 @@ public class EditorSettings extends Modal<Void>
 
     }
 }
+
+// CULL FACE
+// WIREFRAME OR SOLID
+// POST PROCESSING
 
 //protected static Modal<Node> addNodes()
 //    {

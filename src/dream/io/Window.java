@@ -48,7 +48,8 @@ public class Window
             final GLFWVidMode vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             assert vidMode != null : "Video Mode Error!!";
 
-            int centerX = (vidMode.width() - pWidth.get(0)) / 2, centerY = (vidMode.height() - pHeight.get(0)) / 2;
+            int centerX = (int) ((vidMode.width() - pWidth.get(0)) * 0.5f);
+            int centerY = (int) ((vidMode.height() - pHeight.get(0)) * 0.5f);
             glfwSetWindowPos(this.windowID, centerX, centerY);
 
             glfwSetWindowSizeCallback(this.windowID, (window, w, h) -> onResize(w, h));

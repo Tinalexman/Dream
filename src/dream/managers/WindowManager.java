@@ -13,7 +13,7 @@ public class WindowManager
 
     public static long initialize()
     {
-        WindowManager.mainWindow = new Window("Dream", 800, 600);
+        WindowManager.mainWindow = new Window("Dream", 1210, 720);
         WindowManager.mainWindow.show();
         return WindowManager.mainWindow.getId();
     }

@@ -1,34 +1,23 @@
 package dream.node;
 
+import dream.components.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class Node
+public interface Node
 {
-    protected String name;
-    protected final int ID;
-    protected final List<Node> children;
+    String getName();
+    void setName(String name);
 
-    public Node(String name, int ID)
-    {
-        this.name = name;
-        this.ID = ID;
-        this.children = new ArrayList<>();
-    }
+    int getID();
+    void setID(int ID);
 
-    public Node(int ID)
-    {
-        this("Node", ID);
-    }
+    List<Node> getChildren();
+    void addChild(Node child);
+    void removeChild(Node child);
 
-    public String getName()
-    {
-        return this.name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
-    }
+    List<Component> getComponents();
+    <T extends Component> T getComponent(Class<T> componentClass);
+    void addComponent(Component component);
+    void removeComponent(Component component);
 }

@@ -1,5 +1,6 @@
 package dream.io;
 
+import dream.managers.WindowManager;
 import org.joml.Vector2f;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -13,16 +14,11 @@ public class Input
     private float previousXPosition, previousYPosition;
     private boolean dragging;
 
-    private final Vector2f viewportPosition;
-    private final Vector2f viewportSize;
-
     private final boolean[] currentKeys;
     private final boolean[] previousKeys;
 
     private final boolean[] currentMouseButtons;
     private final boolean[] previousMouseButtons;
-
-    private final float[] screenCoordinates;
 
     private long currentWindowID;
 
@@ -40,16 +36,13 @@ public class Input
         this.currentXPosition = 0.0f;
         this.currentYPosition = 0.0f;
 
-        this.viewportSize = new Vector2f();
-        this.viewportPosition = new Vector2f();
-
-        this.screenCoordinates = new float[2];
         this.currentWindowID = -1L;
     }
 
-    public static void initialize()
+    public static void initialize(long windowID)
     {
         Input.instance = new Input();
+        Input.instance.currentWindowID = windowID;
     }
 
     public static void update()
@@ -63,23 +56,7 @@ public class Input
         Input.instance.previousYPosition = Input.instance.currentYPosition;
     }
 
-    public static void attachWindow(long windowID)
-    {
-        Input.instance.currentWindowID = windowID;
-    }
-
-    public static void setGameViewportPos(Vector2f position)
-    {
-        Input.instance.viewportPosition.set(position);
-    }
-
-    public static void setGameViewportSize(Vector2f size)
-    {
-        Input.instance.viewportSize.set(size);
-    }
-
     // KEY FUNCTIONS
-
     public static void keyCallback(long windowID, int key, int scancode, int action, int mods)
     {
         if(action == GLFW_PRESS)
@@ -217,23 +194,18 @@ public class Input
         return !Input.instance.currentMouseButtons[button];
     }
 
-//    public static float[] getScreenCoordinates()
-//    {
-//        if(Input.instance.previousXPosition != Input.instance.currentXPosition ||
-//                Input.instance.previousYPosition != Input.instance.currentYPosition)
-//            calculateScreenCoordinates();
-//        return Input.instance.screenCoordinates;
-//    }
+    public static float[] getScreenCoordinates(float[] position, float[] size)
+    {
+        int[] windowSize = WindowManager.getMainSize();
+        float[] coordinates = new float[] {0.0f, 0.0f};
 
-//    private static void calculateScreenCoordinates()
-//    {
-//        int[] windowSize = Graphics.getWindowSize();
-//        Input.instance.screenCoordinates[0] = Input.instance.currentXPosition - Input.instance.viewportPosition.x;
-//        Input.instance.screenCoordinates[0] = (windowSize[0] / Input.instance.viewportSize.x)
-//                * Input.instance.screenCoordinates[0];
-//        Input.instance.screenCoordinates[1] = Input.instance.currentYPosition - Input.instance.viewportPosition.y;
-//        Input.instance.screenCoordinates[1] = windowSize[1] - (windowSize[1] / Input.instance.viewportSize.y)
-//                * Input.instance.screenCoordinates[1];
-//    }
+        coordinates[0] = Input.instance.currentXPosition - position[0];
+        coordinates[0] = (windowSize[0] / size[0]) * coordinates[0];
+
+        coordinates[1] = Input.instance.currentYPosition - position[1];
+        coordinates[1] = windowSize[1] -  (windowSize[1] / size[1]) * coordinates[1];
+
+        return coordinates;
+    }
 
 }

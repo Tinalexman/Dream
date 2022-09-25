@@ -37,4 +37,9 @@ public class EditorWindow
 
         ImGui.end();
     }
+
+    public void input()
+    {
+
+    }
 }
