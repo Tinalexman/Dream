@@ -16,8 +16,6 @@ public class Camera3D implements Handler
     public static final float minimumFieldOfView = 50.0f;
     public static final float maximumFieldOfView = 120.0f;
 
-    public static Camera3D currentCamera;
-
     protected boolean active;
     protected boolean viewChange;
     protected boolean projectionChange;
@@ -52,9 +50,9 @@ public class Camera3D implements Handler
         this.aspectRatio = WindowManager.getMainRatio();
 
         this.pitch = 0.0f;
-        this.yaw = 0.0f;
+        this.yaw = -90.0f;
 
-        this.position = new Vector3f(0.0f, 1.5f, 2.0f);
+        this.position = new Vector3f(0.0f, 0.0f, 3.0f);
         this.right = new Vector3f(1.0f, 0.0f, 0.0f);
         this.forward = new Vector3f(0.0f, 0.0f, -1.0f);
         this.upVector = new Vector3f(0.0f, 1.0f, 0.0f);

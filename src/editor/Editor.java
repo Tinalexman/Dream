@@ -3,7 +3,10 @@ package editor;
 import dream.managers.WindowManager;
 import dream.scene.Scene;
 import dream.shape.Shape;
+import editor.loader.Functions;
 import editor.util.Constants;
+import editor.util.settings.Settings;
+import editor.util.settings.SettingsTree;
 import editor.windows.*;
 import imgui.ImGui;
 
@@ -17,6 +20,9 @@ public class Editor
 
     public Editor()
     {
+        SettingsTree.initialize();
+        Settings.initialize();
+
         this.gui = new Gui();
 
         this.editorWindows = new HashMap<>();
@@ -31,6 +37,8 @@ public class Editor
     public void initialize(long windowID)
     {
         this.gui.create(windowID);
+
+        Functions.initialize(this.editorWindows);
 
         Runnable mainMenu = () ->
         {
@@ -70,8 +78,9 @@ public class Editor
 
         Scene scene = new Scene(new Shape());
         ((EditorViewport) this.editorWindows.get(Constants.editorViewport)).setScene(scene);
-    }
 
+
+    }
 
     public void refresh()
     {

@@ -4,7 +4,7 @@ import dream.components.Component;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-public class Transform implements Component
+public class Transform3D implements Component
 {
     public Vector3f position;
     public Vector3f orientation;
@@ -13,7 +13,7 @@ public class Transform implements Component
 
     private final Matrix4f matrix;
 
-    public Transform()
+    public Transform3D()
     {
         this.position = new Vector3f(0.0f);
         this.orientation = new Vector3f(0.0f);
@@ -102,17 +102,27 @@ public class Transform implements Component
 
     public Matrix4f getMatrix()
     {
+        if(this.changed)
+        {
+            this.matrix.identity()
+                    .translate(this.position)
+                    .rotateX((float) Math.toRadians(this.orientation.x))
+                    .rotateY((float) Math.toRadians(this.orientation.y))
+                    .rotateZ((float) Math.toRadians(this.orientation.z))
+                    .scale(this.scale);
+            this.changed = false;
+        }
         return this.matrix;
     }
 
     @Override
     public boolean equals(Object object)
     {
-        if (!(object instanceof Transform transform))
+        if (!(object instanceof Transform3D transform3D))
             return false;
-        return this.position.equals(transform.position) &&
-                this.orientation.equals(transform.orientation) &&
-                this.scale.equals(transform.scale);
+        return this.position.equals(transform3D.position) &&
+                this.orientation.equals(transform3D.orientation) &&
+                this.scale.equals(transform3D.scale);
     }
 
     @Override

@@ -194,16 +194,15 @@ public class Input
         return !Input.instance.currentMouseButtons[button];
     }
 
-    public static float[] getScreenCoordinates(float[] position, float[] size)
+    public static float[] getScreenCoordinates(int[] windowSize, float[] viewportPosition, float[] viewportSize)
     {
-        int[] windowSize = WindowManager.getMainSize();
         float[] coordinates = new float[] {0.0f, 0.0f};
 
-        coordinates[0] = Input.instance.currentXPosition - position[0];
-        coordinates[0] = (windowSize[0] / size[0]) * coordinates[0];
+        coordinates[0] = Input.instance.currentXPosition - viewportPosition[0];
+        coordinates[0] = (windowSize[0] / viewportSize[0]) * coordinates[0];
 
-        coordinates[1] = Input.instance.currentYPosition - position[1];
-        coordinates[1] = windowSize[1] -  (windowSize[1] / size[1]) * coordinates[1];
+        coordinates[1] = Input.instance.currentYPosition - viewportPosition[1];
+        coordinates[1] = (windowSize[1] / viewportSize[1]) * coordinates[1];
 
         return coordinates;
     }

@@ -1,23 +1,15 @@
 package editor.windows;
 
 import dream.graphics.icon.Icons;
-import dream.io.FrameBuffer;
 import dream.managers.ResourcePool;
 import dream.managers.WindowManager;
-import dream.node.Node;
 import dream.scene.Scene;
-import dream.shader.Shader;
 import editor.util.WindowRenderer;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
-
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
-import static org.lwjgl.opengl.GL13.glActiveTexture;
 
 public class EditorViewport extends EditorWindow
 {

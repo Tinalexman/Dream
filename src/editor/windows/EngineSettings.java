@@ -1,11 +1,18 @@
 package editor.windows;
 
 
+import dream.util.contain.Containable;
+import dream.util.contain.Container;
+import editor.util.settings.Settings;
+import editor.util.settings.SettingsTree;
 import editor.windows.modal.Modal;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.flag.ImGuiTreeNodeFlags;
+import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImString;
+
+import java.util.List;
 
 public class EngineSettings extends Modal<Void>
 {
@@ -13,6 +20,8 @@ public class EngineSettings extends Modal<Void>
     private final int defaultTreeFlags = ImGuiTreeNodeFlags.OpenOnArrow
         | ImGuiTreeNodeFlags.OpenOnDoubleClick
         | ImGuiTreeNodeFlags.DefaultOpen;
+
+    private Containable<String> selected = SettingsTree.first();
 
     public EngineSettings()
     {
@@ -33,6 +42,19 @@ public class EngineSettings extends Modal<Void>
     @Override
     public void drawContent()
     {
+        // Left Window
+        ImVec2 size = ImGui.getContentRegionAvail();
+
+        ImGui.beginChild("##leftWindow", size.x * 0.35f, size.y, true, ImGuiWindowFlags.HorizontalScrollbar);
+        showLeftPane(SettingsTree.leftRoot());
+
+        ImGui.endChild();
+
+        ImGui.sameLine(size.x * 0.4f);
+
+        ImGui.beginChild("##rightWindow", size.x * 0.6f, size.y, true, ImGuiWindowFlags.HorizontalScrollbar);
+        showRightPane();
+        ImGui.endChild();
 
     }
 
@@ -59,6 +81,45 @@ public class EngineSettings extends Modal<Void>
         }
         ImGui.setItemDefaultFocus();
 
+    }
+
+    private void showLeftPane(Container<String> root)
+    {
+        List<Containable<String>> children = root.getItems();
+
+        for (int i = 0; i < children.size(); i++)
+        {
+            int flags = defaultTreeFlags;
+            Containable<String> currentNode = children.get(i);
+            boolean isSelected = currentNode.equals(this.selected);
+            if (isSelected)
+                flags |= ImGuiTreeNodeFlags.Selected;
+
+            Container<String> container = null;
+            boolean isContainer = currentNode.isContainer();
+            boolean hasChildren = isContainer && (container = (Container<String>) currentNode).hasChildren();
+
+            if(!hasChildren)
+                flags |= ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Bullet;
+
+            boolean nodeOpen = ImGui.treeNodeEx(i, flags, currentNode.getName());
+            if (ImGui.isItemClicked() && !ImGui.isItemToggledOpen())
+                this.selected = currentNode;
+
+            if(hasChildren && nodeOpen)
+            {
+                showLeftPane(container);
+                ImGui.treePop();
+            }
+        }
+    }
+
+    private void showRightPane()
+    {
+        if(this.selected.isContainer())
+            ImGui.text(this.selected.getValue());
+        else
+            Settings.getRightContent(this.selected).run();
     }
 }
 

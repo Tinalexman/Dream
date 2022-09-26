@@ -3,6 +3,7 @@ package editor.util;
 import dream.Engine;
 import dream.camera.Camera3D;
 import dream.components.mesh.Mesh;
+import dream.components.transform.Transform3D;
 import dream.events.Event;
 import dream.events.EventManager;
 import dream.events.EventType;
@@ -15,6 +16,7 @@ import dream.managers.WindowManager;
 import dream.node.Node;
 import dream.scene.Scene;
 import dream.shader.Shader;
+import dream.shader.ShaderConstants;
 import dream.shape.Shape;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -45,8 +47,13 @@ public class WindowRenderer implements Handler
 
         EventManager.add(EventType.WindowResize, this);
 
-        this.shader = ResourcePool.addAndGetShader("default.glsl");
+        this.shader = ResourcePool.addAndGetShader("blankShader.glsl");
         this.shader.onStart();
+        this.shader.storeUniforms(ShaderConstants.projection, ShaderConstants.view,
+                ShaderConstants.transformation, ShaderConstants.color);
+
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
     }
 
     @Override
@@ -76,16 +83,16 @@ public class WindowRenderer implements Handler
         this.shader.start();
 
         glClearColor(0.0f, 0.0f, 0.0f, 0.7f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if(root instanceof Shape)
         {
-            //Transform t = root.getComponent(Transform.class);
+            Transform3D t = root.getComponent(Transform3D.class);
             Mesh mesh = root.getComponent(Mesh.class);
-//            this.shader.loadUniform(ShaderConstants.transformation, t.getMatrix());
-//            this.shader.loadUniform(ShaderConstants.view, this.camera.getView());
-//            this.shader.loadUniform(ShaderConstants.projection, this.camera.getProjection());
-//            this.shader.loadUniform(ShaderConstants.color, 1.0f, 1.0f, 1.0f);
+            this.shader.loadUniform(ShaderConstants.transformation, t.getMatrix());
+            this.shader.loadUniform(ShaderConstants.view, this.camera.getView());
+            this.shader.loadUniform(ShaderConstants.projection, this.camera.getProjection());
+            this.shader.loadUniform(ShaderConstants.color, 0.9f, 0.9f, 0.9f);
 
             mesh.onStart();
             if(mesh.hasIndices())
@@ -114,27 +121,30 @@ public class WindowRenderer implements Handler
         if(this.scene == null)
             return;
 
+        int[] winSize = WindowManager.getMainSize();
+        float[] coordinates = Input.getScreenCoordinates(winSize, position, size);
+
+        if(coordinates[0] < 0 || coordinates[0] > winSize[0] ||
+                coordinates[1] < 0 || coordinates[1] > winSize[1])
+            return;
+
         if(Input.getScrollY() != 0.0f)
             this.camera.incrementZoom(-Input.getScrollY() * 0.1f);
 
         if(Input.isButtonJustPressed(GLFW_MOUSE_BUTTON_LEFT))
         {
-            float[] coordinates = Input.getScreenCoordinates(position, size);
             int x = (int) coordinates[0];
             int y = (int) coordinates[1];
-
-            //int ID = this.sceneRenderer.readPixelAt(x, y);
-            System.out.println("X: " + x + " Y: " + y);
         }
 
         if(Input.isButtonPressed(GLFW_MOUSE_BUTTON_RIGHT))
         {
             Vector2f mouseDelta = Input.getMouseDelta();
-            mouseDelta.mul(0.1f); // Reduce the sensitivity
+            mouseDelta.mul(0.25f); // Reduce the sensitivity
             this.camera.rotate(mouseDelta.y , mouseDelta.x);
         }
 
-        float speed = Engine.deltaTime * 0.1f;
+        float speed = (float) (Engine.deltaTime * Engine.nanoSeconds);
         Vector3f temp = new Vector3f();
 
         if(Input.isKeyPressed(GLFW_KEY_W))

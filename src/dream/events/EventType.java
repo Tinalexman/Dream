@@ -16,5 +16,7 @@ public enum EventType
     EndViewportRuntime,
 
     // EDITOR STUFF
-    EditorOptions
+    EditorOptions,
+
+    EditorSettings
 }

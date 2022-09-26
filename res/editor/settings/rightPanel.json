@@ -1,0 +1,23 @@
+[
+  {
+    "Rendering" :
+    {
+        "contents" :
+        [
+            {
+              "name" : "Culling",
+              "type" : "Combo",
+              "values" : ["None", "Front Face", "Back Face", "Both Faces"]
+            },
+            {
+              "name" : "Draw Mode",
+              "type" : "Combo",
+              "values" : ["Solid", "WireFrame"]
+            }
+        ]
+    }
+
+  }
+
+
+]

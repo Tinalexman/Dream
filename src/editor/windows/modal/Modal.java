@@ -85,12 +85,9 @@ public abstract class Modal<T> extends EditorWindow
                 ImGui.pushStyleColor(ImGuiCol.ChildBg, 10, 10, 10, 10);
                 ImGui.beginChild("##modal" + this.title, this.childSize.x,
                         this.childSize.y - getBottomHeight(), true, ImGuiWindowFlags.HorizontalScrollbar);
-            }
 
-            drawContent();
+                drawContent();
 
-            if(!wrapContent)
-            {
                 ImGui.endChild();
                 ImGui.popStyleColor(1);
             }
@@ -98,6 +95,7 @@ public abstract class Modal<T> extends EditorWindow
             drawBottomSheet();
             ImGui.endPopup();
         }
+
         ImGui.popStyleColor(1);
     }
 
