@@ -1,13 +1,17 @@
 package editor;
 
+import dream.managers.ResourcePool;
 import dream.managers.WindowManager;
 import dream.scene.Scene;
 import dream.shape.Shape;
 import editor.loader.Functions;
 import editor.util.Constants;
-import editor.util.settings.Settings;
-import editor.util.settings.SettingsTree;
+import editor.util.components.ComponentTree;
+import editor.util.settings.RightTree;
+import editor.util.settings.LeftTree;
 import editor.windows.*;
+import editor.windows.modal.EngineSettings;
+import editor.windows.popup.AddComponent;
 import imgui.ImGui;
 
 import java.util.HashMap;
@@ -20,27 +24,14 @@ public class Editor
 
     public Editor()
     {
-        SettingsTree.initialize();
-        Settings.initialize();
-
         this.gui = new Gui();
-
         this.editorWindows = new HashMap<>();
-
-        this.editorWindows.put(Constants.editorViewport, new EditorViewport());
-        this.editorWindows.put(Constants.editorScenegraph, new EditorSceneGraph());
-        this.editorWindows.put(Constants.editorInspector, new EditorInspector());
-        this.editorWindows.put(Constants.engineSettings, new EngineSettings());
-        this.editorWindows.put(Constants.editorOutput, new EditorWindow("Output"));
     }
 
     public void initialize(long windowID)
     {
         this.gui.create(windowID);
-
-        Functions.initialize(this.editorWindows);
-
-        Runnable mainMenu = () ->
+        this.gui.setMenuBarCallBack(() ->
         {
             if(ImGui.beginMenuBar())
             {
@@ -72,14 +63,38 @@ public class Editor
 
                 ImGui.endMenuBar();
             }
-        };
+        });
 
-        this.gui.setMenuBarCallBack(mainMenu);
+        LeftTree.initialize();
+        RightTree.initialize();
+        ComponentTree.initialize();
+        Functions.initialize(this.editorWindows);
 
-        Scene scene = new Scene(new Shape());
-        ((EditorViewport) this.editorWindows.get(Constants.editorViewport)).setScene(scene);
+        this.editorWindows.put("V", new EditorViewport("V"));
+        EditorSceneGraph sceneGraph = new EditorSceneGraph();
+        EditorInspector inspector = new EditorInspector();
+        EditorViewport viewport = new EditorViewport();
+        AddComponent addComponent = new AddComponent();
 
+        this.editorWindows.put(Constants.editorViewport, viewport);
+        this.editorWindows.put(Constants.editorScenegraph, sceneGraph);
+        this.editorWindows.put(Constants.editorInspector, inspector);
+        this.editorWindows.put(Constants.editorAddComponent, addComponent);
+        this.editorWindows.put(Constants.engineSettings, new EngineSettings());
+        this.editorWindows.put(Constants.editorOutput, new EditorWindow("Output"));
 
+        Shape shape = new Shape();
+        shape.setShader(ResourcePool.getDefault());
+
+        Scene scene = new Scene(shape);
+        viewport.setScene(scene);
+        sceneGraph.setScene(scene);
+
+        inspector.setOnAddComponent(addComponent::activate);
+        inspector.setSelection(sceneGraph.getSelection());
+        addComponent.setSelectedNode(sceneGraph.getSelection());
+
+        ((EditorViewport) this.editorWindows.get("V")).setScene(scene);
     }
 
     public void refresh()
@@ -88,6 +103,7 @@ public class Editor
 
         this.editorWindows.values().forEach(EditorWindow::show);
         //ImGui.showStyleEditor();
+        //ImGui.showDemoWindow();
 
         this.gui.end();
     }
@@ -100,6 +116,7 @@ public class Editor
     public void destroy()
     {
         this.gui.destroy();
+        this.editorWindows.values().forEach(EditorWindow::destroy);
     }
 
 }

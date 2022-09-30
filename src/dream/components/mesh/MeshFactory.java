@@ -20,6 +20,20 @@ public class MeshFactory
             1, 2, 3 // second triangle
         };
 
+        mesh.textures = new float[]
+        {
+           1.0f, 1.0f,
+           1.0f, 0.0f,
+           0.0f, 0.0f,
+           0.0f, 1.0f
+        };
+
+        mesh.normals = new float[]
+        {
+            0.0f, 1.0f, 0.0f,
+            0.0f, 1.0f, 0.0f
+        };
+
         mesh.create();
     }
 

@@ -1,7 +1,7 @@
 package dream;
 
 
-import dream.events.EventManager;
+import editor.events.EventManager;
 import dream.io.Input;
 import dream.managers.ResourcePool;
 import dream.managers.WindowManager;

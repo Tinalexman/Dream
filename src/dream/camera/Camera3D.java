@@ -1,15 +1,14 @@
 package dream.camera;
 
-import dream.events.Event;
-import dream.events.EventManager;
-import dream.events.EventType;
-import dream.events.handler.Handler;
-import dream.events.type.WindowResize;
+import editor.events.Event;
+import editor.events.EventManager;
+import editor.events.EventType;
+import editor.events.type.WindowResize;
 import dream.managers.WindowManager;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-public class Camera3D implements Handler
+public class Camera3D
 {
     public static final float minimumCameraNearPlane = 0.001f;
     public static final float maximumCameraFarPlane = 10000.0f;
@@ -59,22 +58,6 @@ public class Camera3D implements Handler
 
         this.projection = new Matrix4f().identity();
         this.view = new Matrix4f().identity();
-
-        EventManager.add(EventType.WindowResize, this);
-    }
-
-    @Override
-    public void respond(Event event)
-    {
-        if(event.type == EventType.WindowResize)
-        {
-            WindowResize w = (WindowResize) event;
-            if(!w.minimized())
-            {
-                this.aspectRatio = (float) (w.width / w.height);
-                this.projectionChange = true;
-            }
-        }
     }
 
     public Matrix4f getProjection()
@@ -191,6 +174,21 @@ public class Camera3D implements Handler
         this.upVector.set(temp);
 
         this.viewChange = true;
+    }
+
+    public float getFieldOfView()
+    {
+        return this.fieldOfView;
+    }
+
+    public float getPitch()
+    {
+        return this.pitch;
+    }
+
+    public float getYaw()
+    {
+        return this.yaw;
     }
 
     public boolean hasViewChanged()

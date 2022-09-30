@@ -5,6 +5,7 @@ import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiCond;
+import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
 
 public abstract class Modal<T> extends EditorWindow
@@ -67,9 +68,11 @@ public abstract class Modal<T> extends EditorWindow
         }
 
         ImGui.pushStyleColor(ImGuiCol.ModalWindowDimBg, 0, 0, 0, 200);
-
+        ImGui.pushStyleVar(ImGuiStyleVar.WindowBorderSize, 1.0f);
         if (ImGui.beginPopupModal(this.title, this.windowFlags))
         {
+            ImGui.popStyleVar();
+
             ImVec2 tempVector = new ImVec2();
             ImGui.calcTextSize(tempVector, this.headerMessage);
             ImGui.sameLine(20.0f);

@@ -1,9 +1,10 @@
 package dream.managers;
 
 import dream.Engine;
-import dream.graphics.material.Texture;
+import dream.graphics.texture.Texture;
 import dream.shader.Shader;
 import dream.graphics.icon.Icons;
+import dream.shader.ShaderConstants;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -16,6 +17,20 @@ public final class ResourcePool
 
     private static final Map<String, Shader> shaders = new HashMap<>();
     private static final Map<String, Texture> textures = new HashMap<>();
+
+    private static Shader defaultShader;
+
+    public static Shader getDefault()
+    {
+        if(ResourcePool.defaultShader == null)
+        {
+            ResourcePool.defaultShader = addAndGetShader("default.glsl");
+            ResourcePool.defaultShader.onStart();
+            ResourcePool.defaultShader.storeUniforms(ShaderConstants.projection, ShaderConstants.view,
+                    ShaderConstants.transformation, ShaderConstants.color, ShaderConstants.isActive);
+        }
+        return ResourcePool.defaultShader;
+    }
 
     public static Shader getShader(String resourceName)
     {
@@ -113,20 +128,16 @@ public final class ResourcePool
         int ID = -1;
         if(textureName.startsWith("menu"))
             ID = Icons.menu;
-        else if(textureName.startsWith("play"))
-            ID = Icons.play;
-        else if(textureName.startsWith("stop"))
-            ID = Icons.stop;
-        else if(textureName.startsWith("done_tick"))
-            ID = Icons.done_tick;
-        else if(textureName.startsWith("cancel_tick"))
-            ID = Icons.cancel_tick;
-        else if(textureName.startsWith("left"))
-            ID = Icons.left;
-        else if(textureName.startsWith("right"))
-            ID = Icons.right;
-        else if(textureName.startsWith("refresh"))
-            ID = Icons.refresh;
+        else if(textureName.startsWith("about"))
+            ID = Icons.about;
+        else if(textureName.startsWith("done"))
+            ID = Icons.done;
+        else if(textureName.startsWith("close"))
+            ID = Icons.close;
+        else if(textureName.startsWith("plus"))
+            ID = Icons.plus;
+        else if(textureName.startsWith("minus"))
+            ID = Icons.minus;
 
         return ID;
     }

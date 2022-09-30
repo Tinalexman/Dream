@@ -16,7 +16,7 @@ public class Functions
         Functions.functions.put("quitEditor", WindowManager::closeMain);
 
         EditorWindow settings = editorWindows.get(Constants.engineSettings);
-        Functions.functions.put("activateSettings", settings::activate);
+        //Functions.functions.put("activateSettings", settings::activate);
     }
 
     public static Runnable get(String functionName)

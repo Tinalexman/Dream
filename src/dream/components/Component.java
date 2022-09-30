@@ -1,11 +1,37 @@
 package dream.components;
 
-public interface Component
+public class Component
 {
-    void onStart();
-    void onChanged();
-    void onStop();
+    protected boolean changed;
 
-    boolean hasChanged();
-    void change(boolean change);
+    public Component()
+    {
+        this.changed = true;
+    }
+
+
+    public void onStart()
+    {
+
+    }
+
+    public void onChanged()
+    {
+
+    }
+
+    public void onStop()
+    {
+
+    }
+
+    public boolean hasChanged()
+    {
+        return this.changed;
+    }
+
+    public void change(boolean change)
+    {
+        this.changed = change;
+    }
 }

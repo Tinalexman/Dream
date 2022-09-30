@@ -1,30 +1,42 @@
 package editor.windows;
 
+import dream.camera.Camera3D;
 import dream.graphics.icon.Icons;
 import dream.managers.ResourcePool;
 import dream.managers.WindowManager;
 import dream.scene.Scene;
-import editor.util.WindowRenderer;
+import editor.events.Event;
+import editor.events.EventManager;
+import editor.events.EventType;
+import editor.events.handler.Handler;
+import editor.events.type.WindowResize;
+import editor.renderer.RenderConfigs;
+import editor.renderer.Renderer;
+import editor.util.Controls;
 import imgui.ImGui;
 import imgui.ImVec2;
-import imgui.flag.ImGuiCol;
-import imgui.flag.ImGuiStyleVar;
-import imgui.flag.ImGuiWindowFlags;
+import imgui.flag.*;
+import imgui.type.ImInt;
+import org.joml.Vector3f;
 
-public class EditorViewport extends EditorWindow
+public class EditorViewport extends EditorWindow implements Handler
 {
     private final float[] position;
     private final float[] size;
 
     private final int menuIcon;
 
-    private final WindowRenderer windowRenderer;
+    private final Renderer renderer;
 
 
     public EditorViewport()
     {
-        super("Viewport");
+        this("Viewport");
+    }
 
+    public EditorViewport(String name)
+    {
+        super(name);
         this.windowFlags = ImGuiWindowFlags.NoScrollbar |
                 ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.MenuBar;
         this.menuIcon = ResourcePool.getIcon(Icons.menu);
@@ -32,15 +44,17 @@ public class EditorViewport extends EditorWindow
         this.position = new float[] {0.0f, 0.0f};
         this.size = new float[] {0.0f, 0.0f};
 
-        this.windowRenderer = new WindowRenderer(position, size);
+        this.renderer = new Renderer(position, size);
+        EventManager.add(EventType.WindowResize, this);
     }
 
     @Override
     public void show()
     {
-        this.windowRenderer.render();
+        this.renderer.render();
 
         this.isActive = ImGui.begin(this.title, windowFlags);
+        this.isFocused = ImGui.isWindowFocused(ImGuiFocusedFlags.RootAndChildWindows);
 
         ImVec2 framebufferSizeInWindow = getLargestSizeForViewPort();
         ImVec2 framebufferPositionInWindow = getCenteredPositionForViewPort(framebufferSizeInWindow);
@@ -58,14 +72,18 @@ public class EditorViewport extends EditorWindow
             ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 0, 0, 0, 20);
             ImGui.pushStyleColor(ImGuiCol.ButtonActive, 0, 0, 0, 0);
 
+            showMenu();
+
             ImGui.imageButton(this.menuIcon, 16.0f, 16.0f, 0.0f, 1.0f, 1.0f, 0.0f);
+            ImGui.openPopupOnItemClick("viewportSettings", ImGuiPopupFlags.MouseButtonLeft);
+
             ImGui.popStyleColor(4);
             ImGui.endMenuBar();
         }
         ImGui.popStyleColor();
 
         ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, 0.0f, 0.0f);
-        ImGui.image(this.windowRenderer.getID(), framebufferSizeInWindow.x, framebufferSizeInWindow.y, 0, 1, 1, 0);
+        ImGui.image(this.renderer.getID(), framebufferSizeInWindow.x, framebufferSizeInWindow.y, 0, 1, 1, 0);
         ImGui.popStyleVar();
 
         if(hasChanged(actualWindowSize, actualWindowPosition))
@@ -80,16 +98,101 @@ public class EditorViewport extends EditorWindow
         ImGui.end();
     }
 
+    @Override
+    public void destroy()
+    {
+        this.renderer.destroy();
+    }
+
+    private void showMenu()
+    {
+        ImGui.pushStyleVar(ImGuiStyleVar.WindowBorderSize, 1.0f);
+        if(ImGui.beginPopupContextItem("viewportSettings"))
+        {
+            ImGui.textWrapped("Camera");
+            ImGui.separator();
+            this.renderer.useCamera = Controls.drawBooleanControl(this.renderer.useCamera, "Use Camera");
+            ImGui.beginDisabled(!this.renderer.useCamera);
+
+            Camera3D cam = this.renderer.camera;
+            Vector3f pos = cam.getPosition();
+
+            ImGui.text("Position: ");
+            ImGui.sameLine();
+            ImGui.text(pos.x + "\t" + pos.y + "\t" + pos.z);
+
+            ImGui.text("Pitch: " + cam.getPitch() + "\t\tYaw: " + cam.getYaw());
+
+            ImGui.text("Field Of View: ");
+            ImGui.sameLine();
+            ImGui.text("" + cam.getFieldOfView());
+
+            float[] arr = new float[] { cam.getNearPlane() };
+            boolean res = Controls.dragFloat("Near Plane", arr);
+            ImGui.sameLine();
+            Controls.drawHelpMarker("This is the minimum distance from the camera in which an object can be seen.");
+            if(res)
+                this.renderer.camera.setNearPlane(Math.max(0.001f, arr[0]));
+
+
+            arr = new float[] { cam.getFarPlane() };
+            res = Controls.dragFloat("Far Plane", arr);
+            ImGui.sameLine();
+            Controls.drawHelpMarker("This is the maximum distance from the camera in which an object can be seen.");
+            if(res)
+                this.renderer.camera.setFarPlane(Math.min(1000000.0f, arr[0]));
+
+            ImGui.endDisabled();
+
+            ImGui.newLine();
+
+            ImGui.textWrapped("Rendering");
+            ImGui.separator();
+
+            ImGui.text("Culling:");
+            ImGui.sameLine();
+            ImInt selection = new ImInt(this.renderer.configs.getCull());
+            res = ImGui.combo("##cull", selection, RenderConfigs.cullOptions, ImGuiComboFlags.NoArrowButton);
+            ImGui.sameLine();
+            Controls.drawHelpMarker("Culling determines which faces of a mesh are rendered.");
+            if(res)
+                this.renderer.configs.setCull(selection.get());
+
+            ImGui.text("Face Mode:");
+            ImGui.sameLine();
+            selection.set(this.renderer.configs.getFace());
+            res = ImGui.combo("##face", selection, RenderConfigs.faceOptions, ImGuiComboFlags.NoArrowButton);
+            ImGui.sameLine();
+            Controls.drawHelpMarker("Face Mode determines how the faces of a mesh are rendered.");
+            if(res)
+                this.renderer.configs.setFace(selection.get());
+
+            ImGui.newLine();
+
+            ImGui.textWrapped("Options");
+            ImGui.separator();
+            ImGui.pushStyleColor(ImGuiCol.Button, 66, 150, 250, 102);
+            ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 66, 150, 250, 255);
+            ImGui.pushStyleColor(ImGuiCol.ButtonActive, 15, 135, 250, 250);
+            ImGui.button("New Viewport From Scene");
+            ImGui.button("Delete Current Viewport");
+            ImGui.popStyleColor(3);
+
+            ImGui.endPopup();
+        }
+        ImGui.popStyleVar();
+    }
+
     public void setScene(Scene scene)
     {
-        this.windowRenderer.setScene(scene);
+        this.renderer.setScene(scene);
     }
 
     @Override
     public void input()
     {
-        if(this.isActive)
-            this.windowRenderer.input();
+        if(this.isActive && this.isFocused)
+            this.renderer.input();
     }
 
     private ImVec2 getCenteredPositionForViewPort(ImVec2 aspectSize)
@@ -134,7 +237,18 @@ public class EditorViewport extends EditorWindow
         return !(equalSize && samePosition);
     }
 
-//    private void postProcess()
+    @Override
+    public void respond(Event event)
+    {
+        if(event.type == EventType.WindowResize)
+        {
+            WindowResize w = (WindowResize) event;
+            if(!w.minimized())
+                this.renderer.camera.setAspectRatio((float) (w.width / w.height));
+        }
+    }
+
+    //    private void postProcess()
 //    {
 //        if(this.currentFilter.val.equals("None"))
 //        {

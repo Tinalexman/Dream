@@ -117,6 +117,11 @@ public class Shader
         glDeleteShader(fragmentShader);
     }
 
+    public Map<String, Integer> getUniformVariables()
+    {
+        return this.uniformVariables;
+    }
+
     public void start()
     {
         glUseProgram(this.programID);
@@ -146,7 +151,7 @@ public class Shader
         return glGetUniformLocation(this.programID, name);
     }
 
-    public void storeUniforms(String... uniforms)
+    public final void storeUniforms(String ... uniforms)
     {
         for(String uniform : uniforms)
         {
@@ -163,19 +168,19 @@ public class Shader
 
     public void loadUniform(String name, int value)
     {
-        int location = this.uniformVariables.getOrDefault(name, -1);
+        int location = this.uniformVariables.get(name);
         glUniform1i(location, value);
     }
 
     public void loadUniform(String name, float value)
     {
-        int location = this.uniformVariables.getOrDefault(name, -1);
+        int location = this.uniformVariables.get(name);
         glUniform1f(location, value);
     }
 
     public void loadUniform(String name, boolean value)
     {
-        int location = this.uniformVariables.getOrDefault(name, -1);
+        int location = this.uniformVariables.get(name);
         glUniform1i(location, value ? 1 : 0);
     }
 
@@ -186,7 +191,7 @@ public class Shader
 
     public void loadUniform(String name, float x, float y)
     {
-        int location = this.uniformVariables.getOrDefault(name, -1);
+        int location = this.uniformVariables.get(name);
         glUniform2f(location,x, y);
     }
 
@@ -197,7 +202,7 @@ public class Shader
 
     public void loadUniform(String name, float x, float y, float z)
     {
-        int location = this.uniformVariables.getOrDefault(name, -1);
+        int location = this.uniformVariables.get(name);
         glUniform3f(location, x, y, z);
     }
 
@@ -208,13 +213,13 @@ public class Shader
 
     public void loadUniform(String name, float x, float y, float z, float w)
     {
-        int location = this.uniformVariables.getOrDefault(name, -1);
+        int location = this.uniformVariables.get(name);
         glUniform4f(location, x, y, z, w);
     }
 
     public void loadUniform(String name, Matrix3f value)
     {
-        int location = this.uniformVariables.getOrDefault(name, -1);
+        int location = this.uniformVariables.get(name);
         try(MemoryStack stack = MemoryStack.stackPush())
         {
             glUniformMatrix3fv(location, false, value.get(stack.mallocFloat(9)));
@@ -223,17 +228,11 @@ public class Shader
 
     public void loadUniform(String name, Matrix4f value)
     {
-        int location = this.uniformVariables.getOrDefault(name, -1);
+        int location = this.uniformVariables.get(name);
         try(MemoryStack stack = MemoryStack.stackPush())
         {
             glUniformMatrix4fv(location, false, value.get(stack.mallocFloat(16)));
         }
-    }
-
-    public void loadUniformMatrix4Array(String name,  Matrix4f[] values)
-    {
-        for(int i = 0; i < values.length; i++)
-            loadUniform(name + "[" + i + "]", values[i]);
     }
 
 }

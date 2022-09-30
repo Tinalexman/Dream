@@ -122,7 +122,7 @@ public class Gui
         fontConfig.setGlyphRanges(fontAtlas.getGlyphRangesDefault());
         fontConfig.setRasterizerMultiply(1.0f);
 
-        fontAtlas.addFontFromFileTTF("res/fonts/HPSimplified_Rg.ttf", 14, fontConfig);
+        fontAtlas.addFontFromFileTTF("res/fonts/Poppins.ttf", 15, fontConfig);
         fontConfig.destroy();
 
         imGuiGlfw.init(windowID, false);

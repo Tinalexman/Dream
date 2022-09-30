@@ -9,7 +9,7 @@ import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL33.*;
 
-public class Mesh implements Component
+public class Mesh extends Component
 {
     protected float[] vertices;
     protected float[] textures;
@@ -81,12 +81,6 @@ public class Mesh implements Component
     }
 
     @Override
-    public void onChanged()
-    {
-
-    }
-
-    @Override
     public void onStop()
     {
         if(this.vertices != null)
@@ -97,17 +91,5 @@ public class Mesh implements Component
             glDisableVertexAttribArray(2);
 
         glBindVertexArray(0);
-    }
-
-    @Override
-    public boolean hasChanged()
-    {
-        return false;
-    }
-
-    @Override
-    public void change(boolean change)
-    {
-
     }
 }

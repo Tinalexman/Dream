@@ -8,6 +8,7 @@ public class EditorWindow
     protected boolean isActive;
     protected String title;
     protected int windowFlags;
+    protected boolean isFocused;
 
     public EditorWindow(String title)
     {
@@ -19,6 +20,7 @@ public class EditorWindow
         this.isActive = true;
         this.title = title;
         this.windowFlags = flags;
+        this.isFocused = true;
     }
 
     public void activate()
@@ -42,4 +44,10 @@ public class EditorWindow
     {
 
     }
+
+    public void destroy()
+    {
+
+    }
+
 }

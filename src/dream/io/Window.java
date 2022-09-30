@@ -1,7 +1,7 @@
 package dream.io;
 
-import dream.events.EventManager;
-import dream.events.type.WindowResize;
+import editor.events.EventManager;
+import editor.events.type.WindowResize;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
