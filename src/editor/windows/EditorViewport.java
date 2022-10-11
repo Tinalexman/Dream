@@ -1,6 +1,6 @@
 package editor.windows;
 
-import dream.camera.Camera3D;
+import dream.camera.Camera;
 import dream.graphics.icon.Icons;
 import dream.managers.ResourcePool;
 import dream.managers.WindowManager;
@@ -19,7 +19,9 @@ import imgui.flag.*;
 import imgui.type.ImInt;
 import org.joml.Vector3f;
 
-public class EditorViewport extends EditorWindow implements Handler
+import static org.lwjgl.opengl.GL11.glViewport;
+
+public class EditorViewport extends EditorWindow
 {
     private final float[] position;
     private final float[] size;
@@ -45,7 +47,6 @@ public class EditorViewport extends EditorWindow implements Handler
         this.size = new float[] {0.0f, 0.0f};
 
         this.renderer = new Renderer(position, size);
-        EventManager.add(EventType.WindowResize, this);
     }
 
     @Override
@@ -114,7 +115,7 @@ public class EditorViewport extends EditorWindow implements Handler
             this.renderer.useCamera = Controls.drawBooleanControl(this.renderer.useCamera, "Use Camera");
             ImGui.beginDisabled(!this.renderer.useCamera);
 
-            Camera3D cam = this.renderer.camera;
+            Camera cam = this.renderer.camera;
             Vector3f pos = cam.getPosition();
 
             ImGui.text("Position: ");
@@ -237,16 +238,6 @@ public class EditorViewport extends EditorWindow implements Handler
         return !(equalSize && samePosition);
     }
 
-    @Override
-    public void respond(Event event)
-    {
-        if(event.type == EventType.WindowResize)
-        {
-            WindowResize w = (WindowResize) event;
-            if(!w.minimized())
-                this.renderer.camera.setAspectRatio((float) (w.width / w.height));
-        }
-    }
 
     //    private void postProcess()
 //    {

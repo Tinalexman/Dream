@@ -2,7 +2,7 @@ package editor.windows;
 
 import dream.components.Component;
 import dream.components.material.Material;
-import dream.components.mesh.Mesh;
+import dream.components.mesh.MeshRenderer;
 import dream.components.transform.Transform;
 import dream.graphics.icon.Icons;
 import dream.managers.ResourcePool;
@@ -10,12 +10,10 @@ import dream.node.Node;
 import dream.util.collection.Join;
 import editor.util.Controls;
 import imgui.ImGui;
-import imgui.ImVec2;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiTreeNodeFlags;
 import imgui.flag.ImGuiWindowFlags;
-
-import java.util.List;
+import org.joml.Vector3f;
 
 public class EditorInspector extends EditorWindow
 {
@@ -79,30 +77,33 @@ public class EditorInspector extends EditorWindow
         if(this.selection.value == null)
             return;
 
-        int flags = ImGuiTreeNodeFlags.DefaultOpen | ImGuiTreeNodeFlags.Framed;
-
-        List<Component> components = this.selection.value.getComponents();
-        for(int i = 0; i < components.size(); ++i)
+        for (Component c : this.selection.value.getComponents())
         {
-            Component c = components.get(i);
-            if(ImGui.collapsingHeader(c.getClass().getSimpleName(), flags))
+            if (ImGui.collapsingHeader(c.getClass().getSimpleName(), ImGuiTreeNodeFlags.DefaultOpen))
             {
-                if(c.getClass().isAssignableFrom(Transform.class))
+                if (c.getClass().isAssignableFrom(Transform.class))
                     transform((Transform) c);
                 else if (c.getClass().isAssignableFrom(Material.class))
                     material((Material) c);
-                else if(c.getClass().isAssignableFrom(Mesh.class))
-                    mesh((Mesh) c);
+                else if (c.getClass().isAssignableFrom(MeshRenderer.class))
+                    meshRenderer((MeshRenderer) c);
             }
         }
 
     }
 
-    private void mesh(Mesh m)
+    private void meshRenderer(MeshRenderer renderer)
     {
-        ImGui.text("Mesh Type: Plane");
-        ImGui.text("Vertex Count: " + m.count());
+        int[] meshProperties = renderer.meshProperties();
+
+        ImGui.text("Vertices: " + meshProperties[0]);
+        ImGui.text("Textures: " + meshProperties[1]);
+        ImGui.text("Normals: " + meshProperties[2]);
+        ImGui.text("Indices: " + meshProperties[3]);
+
+        ImGui.text("Vertex Count: " + renderer.count());
     }
+
 
     private void transform(Transform transform)
     {
@@ -111,6 +112,10 @@ public class EditorInspector extends EditorWindow
 
         ImGui.text("Rotation:");
         boolean rot = Controls.drawVector3Control("##rot", transform.getOrientation());
+        Vector3f or = transform.getOrientation();
+        or.x %= 360.0;
+        or.y %= 360.0;
+        or.z %= 360.0;
 
         ImGui.text("Scale:");
         boolean sc = Controls.drawVector3Control("##sc", transform.getScale());

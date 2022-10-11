@@ -1,14 +1,10 @@
 package dream.camera;
 
-import editor.events.Event;
-import editor.events.EventManager;
-import editor.events.EventType;
-import editor.events.type.WindowResize;
 import dream.managers.WindowManager;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-public class Camera3D
+public class Camera
 {
     public static final float minimumCameraNearPlane = 0.001f;
     public static final float maximumCameraFarPlane = 10000.0f;
@@ -37,7 +33,7 @@ public class Camera3D
 
     //protected CameraRay cameraRay;
 
-    public Camera3D()
+    public Camera()
     {
         this.active = false;
         this.viewChange = true;
@@ -51,7 +47,7 @@ public class Camera3D
         this.pitch = 0.0f;
         this.yaw = -90.0f;
 
-        this.position = new Vector3f(0.0f, 0.0f, 3.0f);
+        this.position = new Vector3f(0.0f, 0.0f, 5.0f);
         this.right = new Vector3f(1.0f, 0.0f, 0.0f);
         this.forward = new Vector3f(0.0f, 0.0f, -1.0f);
         this.upVector = new Vector3f(0.0f, 1.0f, 0.0f);
@@ -97,7 +93,7 @@ public class Camera3D
 
     public void setNearPlane(float nearPlane)
     {
-        if(nearPlane >= Camera3D.minimumCameraNearPlane)
+        if(nearPlane >= Camera.minimumCameraNearPlane)
         {
             this.nearPlane = nearPlane;
             this.projectionChange = true;
@@ -106,7 +102,7 @@ public class Camera3D
 
     public void setFarPlane(float farPlane)
     {
-        if(farPlane <= Camera3D.maximumCameraFarPlane)
+        if(farPlane <= Camera.maximumCameraFarPlane)
         {
             this.farPlane = farPlane;
             this.projectionChange = true;
@@ -199,10 +195,10 @@ public class Camera3D
     public void incrementZoom(float increment)
     {
         this.fieldOfView += increment;
-        if(this.fieldOfView < Camera3D.minimumFieldOfView)
-            this.fieldOfView = Camera3D.minimumFieldOfView;
-        if(this.fieldOfView > Camera3D.maximumFieldOfView)
-            this.fieldOfView = Camera3D.maximumFieldOfView;
+        if(this.fieldOfView < Camera.minimumFieldOfView)
+            this.fieldOfView = Camera.minimumFieldOfView;
+        if(this.fieldOfView > Camera.maximumFieldOfView)
+            this.fieldOfView = Camera.maximumFieldOfView;
         this.projectionChange = true;
     }
 

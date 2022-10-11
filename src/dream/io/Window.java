@@ -97,8 +97,6 @@ public class Window
     {
         this.windowSize[0] = newWidth;
         this.windowSize[1] = newHeight;
-        glViewport(0, 0, newWidth, newHeight);
-
         EventManager.push(new WindowResize(newWidth, newHeight));
     }
 

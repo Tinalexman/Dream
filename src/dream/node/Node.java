@@ -7,6 +7,8 @@ import java.util.List;
 
 public class Node
 {
+    private static int counter = 0;
+
     protected String name;
     protected int ID;
     protected final List<Node> children;
@@ -15,7 +17,7 @@ public class Node
     public Node(String name)
     {
         this.name = name;
-        this.ID = 0;
+        this.ID = Node.counter++;
         this.children = new ArrayList<>();
         this.components = new ArrayList<>();
     }
@@ -80,6 +82,16 @@ public class Node
         this.components.add(component);
     }
 
+    public void start()
+    {
+
+    }
+
+    public void stop()
+    {
+
+    }
+
     public void removeComponent(Component component)
     {
         this.components.remove(component);
@@ -93,6 +105,7 @@ public class Node
     public void addChild(Node child)
     {
         this.children.add(child);
+        child.start();
     }
 
     public void removeChild(Node child)

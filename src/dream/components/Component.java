@@ -25,6 +25,11 @@ public class Component
 
     }
 
+    public void destroy()
+    {
+
+    }
+
     public boolean hasChanged()
     {
         return this.changed;

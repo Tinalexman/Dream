@@ -1,8 +1,12 @@
 package editor;
 
+import dream.components.material.Material;
+import dream.components.transform.Transform;
 import dream.managers.ResourcePool;
 import dream.managers.WindowManager;
+import dream.node.Node;
 import dream.scene.Scene;
+import dream.shader.ShaderConstants;
 import dream.shape.Shape;
 import editor.loader.Functions;
 import editor.util.Constants;
@@ -70,7 +74,7 @@ public class Editor
         ComponentTree.initialize();
         Functions.initialize(this.editorWindows);
 
-        this.editorWindows.put("V", new EditorViewport("V"));
+        //this.editorWindows.put("V", new EditorViewport("V"));
         EditorSceneGraph sceneGraph = new EditorSceneGraph();
         EditorInspector inspector = new EditorInspector();
         EditorViewport viewport = new EditorViewport();
@@ -83,10 +87,23 @@ public class Editor
         this.editorWindows.put(Constants.engineSettings, new EngineSettings());
         this.editorWindows.put(Constants.editorOutput, new EditorWindow("Output"));
 
-        Shape shape = new Shape();
-        shape.setShader(ResourcePool.getDefault());
+        Node n = new Node();
 
-        Scene scene = new Scene(shape);
+        Shape shape = new Shape();
+        shape.setTexture("crate diffuse.png");
+        shape.setShader(ResourcePool.defaultMesh());
+        n.addChild(shape);
+
+        Shape s2 = new Shape();
+        s2.setName("Light");
+        s2.setShader(ResourcePool.defaultMesh());
+        n.addChild(s2);
+        Transform t = s2.getComponent(Transform.class);
+        t.scale.set(0.25f);
+        t.position.set(1.2f, 1.0f, 2.0f);
+        s2.getComponent(Material.class).diffuse.set(1.0f);
+
+        Scene scene = new Scene(n);
         viewport.setScene(scene);
         sceneGraph.setScene(scene);
 
@@ -94,7 +111,7 @@ public class Editor
         inspector.setSelection(sceneGraph.getSelection());
         addComponent.setSelectedNode(sceneGraph.getSelection());
 
-        ((EditorViewport) this.editorWindows.get("V")).setScene(scene);
+        //((EditorViewport) this.editorWindows.get("V")).setScene(scene);
     }
 
     public void refresh()

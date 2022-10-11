@@ -1,23 +1,24 @@
 package editor.renderer;
 
 import dream.Engine;
-import dream.camera.Camera3D;
+import dream.camera.Camera;
 import dream.components.material.Material;
-import dream.components.mesh.Mesh;
+import dream.components.mesh.MeshRenderer;
 import dream.components.transform.Transform;
+import dream.io.FrameBuffer;
+import dream.io.Input;
+import dream.managers.WindowManager;
+import dream.node.Node;
+import dream.node.drawable.Drawable;
+import dream.scene.Scene;
+import dream.shader.Shader;
+import dream.shader.ShaderConstants;
 import editor.events.Event;
 import editor.events.EventManager;
 import editor.events.EventType;
 import editor.events.handler.Handler;
 import editor.events.type.WindowResize;
-import dream.io.FrameBuffer;
-import dream.io.Input;
-import dream.managers.WindowManager;
-import dream.node.Node;
-import dream.scene.Scene;
-import dream.shader.Shader;
-import dream.shader.ShaderConstants;
-import dream.shape.Shape;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -33,7 +34,7 @@ public class Renderer implements Handler
     public boolean useCamera;
 
     private FrameBuffer frameBuffer;
-    public final Camera3D camera;
+    public final Camera camera;
     public final RenderConfigs configs;
     private Scene scene;
 
@@ -45,7 +46,7 @@ public class Renderer implements Handler
         int[] windowSize = WindowManager.getMainSize();
         this.frameBuffer = new FrameBuffer(windowSize[0], windowSize[1]);
 
-        this.camera = new Camera3D();
+        this.camera = new Camera();
         this.configs = new RenderConfigs();
 
         this.useCamera = true;
@@ -60,10 +61,15 @@ public class Renderer implements Handler
         {
             WindowResize w = (WindowResize) event;
             if(w.minimized())
+            {
+                glViewport(0, 0, w.width, w.height);
                 return;
+            }
 
             this.frameBuffer.destroy();
             this.frameBuffer = new FrameBuffer(w.width, w.height);
+            this.camera.setAspectRatio((float) w.width / w.height);
+            glViewport(0, 0, w.width, w.height);
         }
     }
 
@@ -86,40 +92,45 @@ public class Renderer implements Handler
             return;
         }
 
-        if(root instanceof Shape shape)
-        {
-            Shader shader = shape.getShader();
-            Transform t = shape.getComponent(Transform.class);
-            Material m = shape.getComponent(Material.class);
-
-            if(t != null && m != null)
-            {
-                shader.start();
-                Mesh mesh = shape.getComponent(Mesh.class);
-
-                shader.loadUniform(ShaderConstants.transformation, t.getMatrix());
-                shader.loadUniform(ShaderConstants.view, this.camera.getView());
-                shader.loadUniform(ShaderConstants.projection, this.camera.getProjection());
-                shader.loadUniform(ShaderConstants.color, m.diffuse);
-                shader.loadUniform(ShaderConstants.isActive, m.hasTexture());
-
-                m.getPack().start();
-
-                mesh.onStart();
-                if(mesh.hasIndices())
-                    glDrawElements(GL_TRIANGLES, mesh.count(), GL_UNSIGNED_INT, 0);
-                else
-                    glDrawArrays(GL_TRIANGLES, 0, mesh.count());
-
-                m.getPack().stop();
-
-                mesh.onStop();
-                shader.stop();
-            }
-        }
+        render(root, this.camera);
+        for(Node node : root.getChildren())
+            render(node, this.camera);
 
         this.configs.deactivate();
         this.frameBuffer.stop();
+    }
+
+    private void render(Node node, Camera camera)
+    {
+        Shader shader = (node instanceof Drawable drawable) ? drawable.getShader() : null;
+        if(shader == null)
+            return;
+
+        MeshRenderer renderer = node.getComponent(MeshRenderer.class);
+        Transform transform = node.getComponent(Transform.class);
+        Material material = node.getComponent(Material.class);
+
+        if(renderer == null || transform == null || material == null)
+            return;
+
+        shader.start();
+        renderer.onStart();
+        material.getPack().start();
+
+        shader.loadUniform(ShaderConstants.transformation, transform.getMatrix());
+        shader.loadUniform(ShaderConstants.view, camera.getView());
+        shader.loadUniform(ShaderConstants.projection, camera.getProjection());
+        shader.loadUniform(ShaderConstants.color, material.diffuse);
+        shader.loadUniform(ShaderConstants.isActive, material.hasTexture());
+
+        if(renderer.hasIndices())
+            glDrawElements(GL_TRIANGLES, renderer.count(), GL_UNSIGNED_INT, 0);
+        else
+            glDrawArrays(GL_TRIANGLES, 0, renderer.count());
+
+        material.getPack().stop();
+        renderer.onStop();
+        shader.stop();
     }
 
     public void setScene(Scene scene)

@@ -13,8 +13,8 @@ public class RenderConfigs
     public RenderConfigs()
     {
         this.cullFlag = -1;
-
         this.faceFlag = GL_FILL;
+
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
     }

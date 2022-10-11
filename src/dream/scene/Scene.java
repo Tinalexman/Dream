@@ -9,6 +9,7 @@ public class Scene
     public Scene(Node root)
     {
         this.root = root;
+        root.start();
     }
 
     public Scene()

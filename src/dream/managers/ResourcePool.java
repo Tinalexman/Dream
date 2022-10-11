@@ -18,18 +18,30 @@ public final class ResourcePool
     private static final Map<String, Shader> shaders = new HashMap<>();
     private static final Map<String, Texture> textures = new HashMap<>();
 
-    private static Shader defaultShader;
+    private static Shader mesh, light;
 
-    public static Shader getDefault()
+    public static Shader defaultMesh()
     {
-        if(ResourcePool.defaultShader == null)
+        if(ResourcePool.mesh == null)
         {
-            ResourcePool.defaultShader = addAndGetShader("default.glsl");
-            ResourcePool.defaultShader.onStart();
-            ResourcePool.defaultShader.storeUniforms(ShaderConstants.projection, ShaderConstants.view,
+            ResourcePool.mesh = addAndGetShader("default.glsl");
+            ResourcePool.mesh.onStart();
+            ResourcePool.mesh.storeUniforms(ShaderConstants.projection, ShaderConstants.view,
                     ShaderConstants.transformation, ShaderConstants.color, ShaderConstants.isActive);
         }
-        return ResourcePool.defaultShader;
+        return ResourcePool.mesh;
+    }
+
+    public static Shader defaultLight()
+    {
+        if(ResourcePool.light == null)
+        {
+            ResourcePool.light = addAndGetShader("color.glsl");
+            ResourcePool.light.onStart();
+            ResourcePool.light.storeUniforms(ShaderConstants.projection, ShaderConstants.view,
+                    ShaderConstants.transformation, ShaderConstants.color);
+        }
+        return ResourcePool.light;
     }
 
     public static Shader getShader(String resourceName)

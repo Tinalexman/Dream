@@ -69,7 +69,7 @@ public class EditorSceneGraph extends EditorWindow
 
         ImGui.pushItemWidth(50.0f);
 
-        boolean groupOpen = ImGui.treeNodeEx(root.hashCode(), groupFlag, root.getClass().getSimpleName());
+        boolean groupOpen = ImGui.treeNodeEx(root.hashCode(), groupFlag, root.getName());
         if(ImGui.isItemClicked() || ImGui.isItemToggledOpen())
             this.selection.value = root;
 
@@ -84,7 +84,7 @@ public class EditorSceneGraph extends EditorWindow
                 int flags = ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Bullet;
                 if(this.selection.value.equals(child))
                     flags |= ImGuiTreeNodeFlags.Selected;
-                ImGui.treeNodeEx(i, flags, child.getClass().getSimpleName());
+                ImGui.treeNodeEx(i, flags, child.getName());
                 if(ImGui.isItemClicked() && !ImGui.isItemToggledOpen())
                     this.selection.value = child;
             }

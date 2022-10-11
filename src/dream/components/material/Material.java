@@ -32,6 +32,7 @@ public class Material extends Component
 
     public Material(Vector3f ambient, Vector3f diffuse, Vector3f specular, float reflectance)
     {
+        super();
         this.ambient = new Vector3f(ambient);
         this.diffuse = new Vector3f(diffuse);
         this.specular = new Vector3f(specular);
@@ -48,6 +49,7 @@ public class Material extends Component
         this.reflectance = material.reflectance;
         this.pack = material.pack;
         this.transparency = material.transparency;
+        this.changed = true;
     }
 
     public Material(Vector3f color, float reflectance)

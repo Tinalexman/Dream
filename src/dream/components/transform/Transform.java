@@ -123,5 +123,4 @@ public class Transform extends Component
                 this.orientation.equals(transform.orientation) &&
                 this.scale.equals(transform.scale);
     }
-
 }

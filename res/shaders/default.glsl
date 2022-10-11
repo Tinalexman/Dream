@@ -29,8 +29,14 @@ uniform vec3 color;
 
 void main()
 {
+    vec4 res = vec4(0.0f);
     if(isActive == 1)
-        outColor = texture(sampler, textureCoordinates);
+    {
+        res = texture(sampler, textureCoordinates);
+        res = pow(res, vec4(2.2f));
+    }
     else
-        outColor = vec4(color, 1.0f);
+        res = vec4(color, 1.0);
+
+    outColor = pow(res, vec4(0.45454545f));
 }
