@@ -37,8 +37,11 @@ public class Shape extends Node implements Drawable
     {
         super.addComponent(new Transform());
         super.addComponent(new Material());
+
         Mesh mesh = new Mesh();
         MeshFactory.asCube(mesh);
+        super.addComponent(mesh);
+
         MeshRenderer renderer = new MeshRenderer();
         renderer.setMesh(mesh);
         super.addComponent(renderer);

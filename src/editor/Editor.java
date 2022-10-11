@@ -1,6 +1,9 @@
 package editor;
 
 import dream.components.material.Material;
+import dream.components.mesh.Mesh;
+import dream.components.mesh.MeshFactory;
+import dream.components.mesh.MeshRenderer;
 import dream.components.transform.Transform;
 import dream.managers.ResourcePool;
 import dream.managers.WindowManager;
@@ -90,13 +93,13 @@ public class Editor
         Node n = new Node();
 
         Shape shape = new Shape();
-        shape.setTexture("crate diffuse.png");
+        //shape.setTexture("crate diffuse.png");
         shape.setShader(ResourcePool.defaultMesh());
         n.addChild(shape);
 
         Shape s2 = new Shape();
         s2.setName("Light");
-        s2.setShader(ResourcePool.defaultMesh());
+        s2.setShader(ResourcePool.defaultLight());
         n.addChild(s2);
         Transform t = s2.getComponent(Transform.class);
         t.scale.set(0.25f);

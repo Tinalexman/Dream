@@ -26,8 +26,11 @@ public final class ResourcePool
         {
             ResourcePool.mesh = addAndGetShader("default.glsl");
             ResourcePool.mesh.onStart();
-            ResourcePool.mesh.storeUniforms(ShaderConstants.projection, ShaderConstants.view,
-                    ShaderConstants.transformation, ShaderConstants.color, ShaderConstants.isActive);
+            ResourcePool.mesh.storeUniforms(
+                    ShaderConstants.projection, ShaderConstants.view,
+                    ShaderConstants.transformation, ShaderConstants.color,
+                    ShaderConstants.lightColor, ShaderConstants.lightPosition,
+                    ShaderConstants.inverseNormals, ShaderConstants.viewPosition);
         }
         return ResourcePool.mesh;
     }

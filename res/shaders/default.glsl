@@ -2,41 +2,57 @@
 #version 330 core
 
 layout (location = 0) in vec3 vertices;
-layout (location = 1) in vec2 textures;
+layout (location = 2) in vec3 normals;
 
-out vec2 textureCoordinates;
+uniform mat3 inverseNormals;
 
 uniform mat4 transformation;
 uniform mat4 projection;
 uniform mat4 view;
 
+out vec3 vertexNormal;
+out vec3 fragmentPosition;
+
 void main()
 {
-    gl_Position = projection * view * transformation * vec4(vertices, 1.0);
-    textureCoordinates = textures;
+    vec4 position = transformation * vec4(vertices, 1.0);
+
+    gl_Position = projection * view * position;
+
+    vertexNormal = inverseNormals * normals;
+    fragmentPosition = position.xyz;
 }
 
 #type FRAGMENT
 #version 330 core
 
-in vec2 textureCoordinates;
-
 out vec4 outColor;
 
-uniform sampler2D sampler;
-uniform int isActive;
+in vec3 vertexNormal;
+in vec3 fragmentPosition;
+
 uniform vec3 color;
+uniform vec3 lightColor;
+uniform vec3 lightPosition;
+uniform vec3 viewPosition;
 
 void main()
 {
-    vec4 res = vec4(0.0f);
-    if(isActive == 1)
-    {
-        res = texture(sampler, textureCoordinates);
-        res = pow(res, vec4(2.2f));
-    }
-    else
-        res = vec4(color, 1.0);
+    float ambientStrength = 0.1f;
+    vec3 ambient = ambientStrength * lightColor;
 
-    outColor = pow(res, vec4(0.45454545f));
+    vec3 norm = normalize(vertexNormal);
+    vec3 lightDirection = normalize(lightPosition - fragmentPosition);
+    float diffuseStrength = max(dot(norm, lightDirection), 0.0);
+    vec3 diffuse = diffuseStrength * lightColor;
+
+    float specularStrength = 0.5;
+    vec3 viewDirection = normalize(viewPosition - fragmentPosition);
+    vec3 reflectDirection = reflect(-lightDirection, norm);
+    float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), 32);
+    vec3 specular = specularStrength * spec * lightColor;
+
+    vec3 result = (ambient + diffuse + specular) * color;
+
+    outColor = vec4(result, 1.0);
 }

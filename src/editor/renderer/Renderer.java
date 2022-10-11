@@ -18,6 +18,7 @@ import editor.events.EventManager;
 import editor.events.EventType;
 import editor.events.handler.Handler;
 import editor.events.type.WindowResize;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -35,7 +36,6 @@ public class Renderer implements Handler
 
     private FrameBuffer frameBuffer;
     public final Camera camera;
-    public final RenderConfigs configs;
     private Scene scene;
 
     public Renderer(float[] position, float[] size)
@@ -47,7 +47,6 @@ public class Renderer implements Handler
         this.frameBuffer = new FrameBuffer(windowSize[0], windowSize[1]);
 
         this.camera = new Camera();
-        this.configs = new RenderConfigs();
 
         this.useCamera = true;
 
@@ -83,11 +82,11 @@ public class Renderer implements Handler
             return;
 
         this.frameBuffer.start();
-        this.configs.activate();
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if(!this.useCamera)
         {
-            this.configs.deactivate();
             this.frameBuffer.stop();
             return;
         }
@@ -96,7 +95,6 @@ public class Renderer implements Handler
         for(Node node : root.getChildren())
             render(node, this.camera);
 
-        this.configs.deactivate();
         this.frameBuffer.stop();
     }
 
@@ -121,7 +119,17 @@ public class Renderer implements Handler
         shader.loadUniform(ShaderConstants.view, camera.getView());
         shader.loadUniform(ShaderConstants.projection, camera.getProjection());
         shader.loadUniform(ShaderConstants.color, material.diffuse);
-        shader.loadUniform(ShaderConstants.isActive, material.hasTexture());
+        if(!node.getName().equals("Light"))
+        {
+            shader.loadUniform(ShaderConstants.lightColor, 1.0f, 1.0f, 1.0f);
+            shader.loadUniform(ShaderConstants.lightPosition, 1.2f, 1.0f, 2.0f);
+
+            Matrix4f temp = new Matrix4f();
+            Matrix3f inverse = new Matrix3f(transform.getMatrix().invert(temp));
+            inverse.transpose();
+            shader.loadUniform(ShaderConstants.inverseNormals, inverse);
+            shader.loadUniform(ShaderConstants.viewPosition, camera.getPosition());
+        }
 
         if(renderer.hasIndices())
             glDrawElements(GL_TRIANGLES, renderer.count(), GL_UNSIGNED_INT, 0);

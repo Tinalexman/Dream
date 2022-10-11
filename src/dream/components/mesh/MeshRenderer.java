@@ -1,23 +1,15 @@
 package dream.components.mesh;
 
-import dream.camera.Camera;
 import dream.components.Component;
-import dream.components.material.Material;
-import dream.components.transform.Transform;
-import dream.node.drawable.Drawable;
-import dream.shader.Shader;
-import dream.shader.ShaderConstants;
 import dream.util.buffer.BufferTools;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_FLOAT;
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
 import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
 import static org.lwjgl.opengl.GL30.*;
 
 public class MeshRenderer extends Component
@@ -25,14 +17,15 @@ public class MeshRenderer extends Component
     protected final int vaoID;
     protected final int[] vboArray;
 
-    protected int count;
-    protected boolean hasIndices;
-
     protected Mesh mesh;
+    private final Configuration configuration;
+
 
     public MeshRenderer()
     {
         this.mesh = null;
+        this.configuration = new Configuration();
+
         this.vaoID = glGenVertexArrays();
         this.vboArray = new int[] {-1, -1, -1, -1};
     }
@@ -43,16 +36,6 @@ public class MeshRenderer extends Component
         create();
     }
 
-    public int[] meshProperties()
-    {
-        return new int[]
-        {
-            mesh.vertices.length,
-            mesh.textures.length,
-            mesh.normals.length,
-            mesh.indices.length
-        };
-    }
 
     private void create()
     {
@@ -61,20 +44,20 @@ public class MeshRenderer extends Component
 
         glBindVertexArray(this.vaoID);
 
-        if(this.mesh.vertices.length > 0)
-            createVBO(0, 3, mesh.vertices);
-        if(this.mesh.textures.length > 0)
-            createVBO(1, 2, mesh.textures);
-        if(this.mesh.normals.length > 0)
-            createVBO(2, 3, mesh.normals);
-        if(this.mesh.indices.length > 0)
-            createEBO(mesh.indices);
+        createVBO(0, 3, this.mesh.vertices);
+        createVBO(1, 2, this.mesh.textures);
+        createVBO(2, 3, this.mesh.normals);
+        createEBO(this.mesh.indices);
 
         onStop();
     }
 
+
     private void createEBO(int[] data)
     {
+        if(data.length <= 0)
+            return;
+
         int eboID = glGenBuffers();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
         IntBuffer buffer = BufferTools.createIntBuffer(data);
@@ -85,6 +68,9 @@ public class MeshRenderer extends Component
 
     private void createVBO(int location, int size, float[] data)
     {
+        if(data.length <= 0)
+            return;
+
         int vboID = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, vboID);
         FloatBuffer buffer = BufferTools.createFloatBuffer(data);
@@ -104,11 +90,15 @@ public class MeshRenderer extends Component
             glEnableVertexAttribArray(1);
         if(this.mesh.normals.length > 0)
             glEnableVertexAttribArray(2);
+
+        this.configuration.activate();
     }
 
     @Override
     public void onStop()
     {
+        this.configuration.deactivate();
+
         if(this.mesh.vertices.length > 0)
             glDisableVertexAttribArray(0);
         if(this.mesh.textures.length > 0)
@@ -134,12 +124,107 @@ public class MeshRenderer extends Component
 
     public boolean hasIndices()
     {
-        return this.mesh.indices.length > 0;
+        return this.mesh.hasIndices();
     }
 
     public int count()
     {
-        return (this.mesh.indices.length == 0) ?
-                (this.mesh.vertices.length / 3) : this.mesh.indices.length;
+        return this.mesh.count();
     }
+
+    public int getCull()
+    {
+        return this.configuration.getCull();
+    }
+
+    public void setCull(int val)
+    {
+        this.configuration.setCull(val);
+    }
+
+    public int getFace()
+    {
+        return this.configuration.getFace();
+    }
+
+    public void setFace(int val)
+    {
+        this.configuration.setFace(val);
+    }
+
+    public static class Configuration
+    {
+        public static final String[] faceOptions = new String[] { "Wireframe", "Solid" };
+        public static final String[] cullOptions = new String[] { "None", "Front Face", "Back Face", "Both Faces" };
+
+        public int cullFlag;
+        public int faceFlag;
+
+        public Configuration()
+        {
+            this.cullFlag = -1;
+            this.faceFlag = GL_FILL;
+
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_LESS);
+        }
+
+        public void activate()
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, this.faceFlag);
+            if(this.cullFlag > 0)
+            {
+                glEnable(GL_CULL_FACE);
+                glCullFace(this.cullFlag);
+            }
+        }
+
+        public void deactivate()
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            glDisable(GL_CULL_FACE);
+        }
+
+        public int getCull()
+        {
+            if(this.cullFlag == GL_FRONT)
+                return 1;
+            else if(this.cullFlag == GL_BACK)
+                return 2;
+            else if(this.cullFlag == GL_FRONT_AND_BACK)
+                return 3;
+            return 0;
+        }
+
+        public void setCull(int val)
+        {
+            if(val == 1)
+                this.cullFlag = GL_FRONT;
+            else if(val == 2)
+                this.cullFlag = GL_BACK;
+            else if(val == 3)
+                this.cullFlag = GL_FRONT_AND_BACK;
+            else
+                this.cullFlag = 0;
+        }
+
+        public int getFace()
+        {
+            if(this.faceFlag == GL_LINE)
+                return 0;
+            else if(this.faceFlag == GL_FILL)
+                return 1;
+            return -1;
+        }
+
+        public void setFace(int val)
+        {
+            if(val == 0)
+                this.faceFlag = GL_LINE;
+            else if(val == 1)
+                this.faceFlag = GL_FILL;
+        }
+    }
+
+
 }

@@ -12,16 +12,10 @@ public class ShaderConstants
     public static final String direction = "direction";
     public static final String viewPosition = "viewPosition";
 
-    // Picking Uniforms
-    public static final String objectIndex = "objectIndex";
-    public static final String drawIndex = "drawIndex";
+    public static final String lightPosition = "lightPosition";
+    public static final String lightColor = "lightColor";
+    public static final String inverseNormals = "inverseNormals";
 
-    // Particle Uniforms
-    public static final String particleSize = "particleSize";
-
-    // Animation  Uniforms
-    public static final String jointTransforms = "jointTransforms";
-    public static final String diffuseMap = "diffuseMap";
 
     public static final String material = "material";
     public static final String diffuse = "diffuse";

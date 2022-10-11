@@ -122,7 +122,7 @@ public class Gui
         fontConfig.setGlyphRanges(fontAtlas.getGlyphRangesDefault());
         fontConfig.setRasterizerMultiply(1.0f);
 
-        fontAtlas.addFontFromFileTTF("res/fonts/Poppins.ttf", 15, fontConfig);
+        fontAtlas.addFontFromFileTTF("res/fonts/Poppins.ttf", 14, fontConfig);
         fontConfig.destroy();
 
         imGuiGlfw.init(windowID, false);
@@ -136,11 +136,11 @@ public class Gui
         ImGuiStyle currentStyle = ImGui.getStyle();
 
         // Adjust Borders
-        currentStyle.setWindowBorderSize(0.0f);
-        currentStyle.setFrameBorderSize(0.0f);
+        currentStyle.setWindowBorderSize(1.0f);
+        currentStyle.setFrameBorderSize(1.0f);
         currentStyle.setChildBorderSize(0.0f);
-        currentStyle.setPopupBorderSize(0.0f);
-        currentStyle.setTabBorderSize(0.0f);
+        currentStyle.setPopupBorderSize(1.0f);
+        currentStyle.setTabBorderSize(1.0f);
 
         // Adjust Rounding
         currentStyle.setFrameRounding(2.0f);
@@ -158,7 +158,8 @@ public class Gui
         // Adjust Spacing
         currentStyle.setItemSpacing(15.0f, 5.0f);
         currentStyle.setItemInnerSpacing(10.0f, 5.0f);
-        currentStyle.setIndentSpacing(20.0f);
+        currentStyle.setIndentSpacing(10.0f);
+
 
         // Adjust Size
         currentStyle.setScrollbarSize(10.0f);
@@ -166,7 +167,7 @@ public class Gui
 
         // Misc
         currentStyle.setWindowTitleAlign(0.5f, 0.5f);
-        currentStyle.setButtonTextAlign(0.5f, 0.5f);
+        currentStyle.setButtonTextAlign(1.0f, 0.5f);
     }
 
     public void destroy()

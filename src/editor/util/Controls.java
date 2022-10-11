@@ -235,6 +235,10 @@ public class Controls
 
     public static void drawHelpMarker(String description)
     {
+        ImGui.pushStyleColor(ImGuiCol.Button, 0, 0, 0, 0);
+        ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 0, 0, 0, 0);
+        ImGui.pushStyleColor(ImGuiCol.ButtonActive, 0, 0, 0, 0);
+        ImGui.pushStyleColor(ImGuiCol.Border, 0, 0, 0, 0);
         ImGui.imageButton(ResourcePool.getIcon(Icons.about), 12.0f, 12.0f, 0, 1, 1, 0);
         if (ImGui.isItemHovered())
         {
@@ -244,6 +248,7 @@ public class Controls
             ImGui.popTextWrapPos();
             ImGui.endTooltip();
         }
+        ImGui.popStyleColor(4);
     }
 
     public static boolean colorPicker4(String label, Vector4f color)

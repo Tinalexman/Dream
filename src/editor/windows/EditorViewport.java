@@ -5,12 +5,6 @@ import dream.graphics.icon.Icons;
 import dream.managers.ResourcePool;
 import dream.managers.WindowManager;
 import dream.scene.Scene;
-import editor.events.Event;
-import editor.events.EventManager;
-import editor.events.EventType;
-import editor.events.handler.Handler;
-import editor.events.type.WindowResize;
-import editor.renderer.RenderConfigs;
 import editor.renderer.Renderer;
 import editor.util.Controls;
 import imgui.ImGui;
@@ -18,8 +12,6 @@ import imgui.ImVec2;
 import imgui.flag.*;
 import imgui.type.ImInt;
 import org.joml.Vector3f;
-
-import static org.lwjgl.opengl.GL11.glViewport;
 
 public class EditorViewport extends EditorWindow
 {
@@ -135,7 +127,6 @@ public class EditorViewport extends EditorWindow
             if(res)
                 this.renderer.camera.setNearPlane(Math.max(0.001f, arr[0]));
 
-
             arr = new float[] { cam.getFarPlane() };
             res = Controls.dragFloat("Far Plane", arr);
             ImGui.sameLine();
@@ -144,29 +135,6 @@ public class EditorViewport extends EditorWindow
                 this.renderer.camera.setFarPlane(Math.min(1000000.0f, arr[0]));
 
             ImGui.endDisabled();
-
-            ImGui.newLine();
-
-            ImGui.textWrapped("Rendering");
-            ImGui.separator();
-
-            ImGui.text("Culling:");
-            ImGui.sameLine();
-            ImInt selection = new ImInt(this.renderer.configs.getCull());
-            res = ImGui.combo("##cull", selection, RenderConfigs.cullOptions, ImGuiComboFlags.NoArrowButton);
-            ImGui.sameLine();
-            Controls.drawHelpMarker("Culling determines which faces of a mesh are rendered.");
-            if(res)
-                this.renderer.configs.setCull(selection.get());
-
-            ImGui.text("Face Mode:");
-            ImGui.sameLine();
-            selection.set(this.renderer.configs.getFace());
-            res = ImGui.combo("##face", selection, RenderConfigs.faceOptions, ImGuiComboFlags.NoArrowButton);
-            ImGui.sameLine();
-            Controls.drawHelpMarker("Face Mode determines how the faces of a mesh are rendered.");
-            if(res)
-                this.renderer.configs.setFace(selection.get());
 
             ImGui.newLine();
 
