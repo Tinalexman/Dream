@@ -39,7 +39,7 @@ public class EditorSceneGraph extends EditorWindow
 
         ImGui.beginChild("##graph", width, height, true, ImGuiWindowFlags.HorizontalScrollbar);
 
-        showNodes();
+        showGroupNodes();
         contextMenu();
 
         ImGui.endChild();
@@ -56,10 +56,15 @@ public class EditorSceneGraph extends EditorWindow
         }
     }
 
-    private void showNodes()
+    private void showGroupNodes()
     {
-        Node root;
-        if(this.scene == null || (root = this.scene.getRoot()) == null)
+        showNodes(this.scene.getRoot(), "Nodes");
+        showNodes(this.scene.getLights(), "Lights");
+    }
+
+    private void showNodes(Node root, String name)
+    {
+        if(root == null)
             return;
 
         int groupFlag = ImGuiTreeNodeFlags.OpenOnArrow | ImGuiTreeNodeFlags.DefaultOpen;
@@ -69,7 +74,7 @@ public class EditorSceneGraph extends EditorWindow
 
         ImGui.pushItemWidth(50.0f);
 
-        boolean groupOpen = ImGui.treeNodeEx(root.hashCode(), groupFlag, root.getName());
+        boolean groupOpen = ImGui.treeNodeEx(root.hashCode(), groupFlag, name);
         if(ImGui.isItemClicked() || ImGui.isItemToggledOpen())
             this.selection.value = root;
 

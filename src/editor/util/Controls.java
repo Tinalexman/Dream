@@ -210,7 +210,7 @@ public class Controls
         ImGui.text(label + ":");
         ImGui.sameLine();
         ImGui.pushItemWidth(85.0f);
-        boolean change = ImGui.dragFloat("##" + label, value, 0);
+        boolean change = ImGui.dragFloat("##" + label, value, Controls.dragIncrement);
         ImGui.popItemWidth();
         return change;
     }

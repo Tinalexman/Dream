@@ -20,7 +20,7 @@ public class Shape extends Node implements Drawable
         super("Shape");
     }
 
-    public void setTexture(String textureName)
+    public void setTextures(String diffuse, String specular)
     {
         Material material;
         if((material = getComponent(Material.class)) == null)
@@ -28,8 +28,11 @@ public class Shape extends Node implements Drawable
             material = new Material();
             addComponent(material);
         }
+        if(diffuse != null)
+            material.getPack().diffuse = ResourcePool.addAndGetTexture(diffuse);
 
-        material.getPack().diffuse = ResourcePool.addAndGetTexture(textureName);
+        if(specular != null)
+            material.getPack().specular = ResourcePool.addAndGetTexture(specular);
     }
 
     @Override

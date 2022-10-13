@@ -181,7 +181,7 @@ public class Shader
     public void loadUniform(String name, boolean value)
     {
         int location = this.uniformVariables.get(name);
-        glUniform1i(location, value ? 1 : 0);
+        glUniform1f(location, value ? 1.0f : 0.0f);
     }
 
     public void loadUniform(String name, Vector2f value)

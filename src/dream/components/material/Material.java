@@ -79,9 +79,14 @@ public class Material extends Component
         return this.pack;
     }
 
-    public boolean hasTexture()
+    public boolean hasDiffuse()
     {
         return this.pack.diffuse != null;
+    }
+
+    public boolean hasSpecular()
+    {
+        return this.pack.specular != null;
     }
 
 }

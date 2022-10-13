@@ -1,38 +1,43 @@
 package dream.scene;
 
+import dream.light.Light;
 import dream.node.Node;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Scene
 {
-    private Node root;
+    private final Map<String, Node> nodeMap;
 
     public Scene(Node root)
     {
-        this.root = root;
+        this.nodeMap = new HashMap<>();
+        this.nodeMap.put("Lights", new Node());
+        this.nodeMap.put("Nodes", root);
+
         root.start();
     }
 
     public Scene()
     {
-        this(null);
+        this(new Node());
     }
 
     public Node getRoot()
     {
-        return this.root;
+        return this.nodeMap.get("Nodes");
     }
 
-    public void setRoot(Node node)
-    {
-        this.root = node;
-    }
+   public Node getLights()
+   {
+       return this.nodeMap.get("Lights");
+   }
 
-    public void addChild(Node parent, Node child)
+    public void addChild(Node child)
     {
-        if(parent != null)
-        {
-            if (this.root != null && !this.root.getChildren().contains(child))
-                parent.addChild(child);
-        }
+        Node root = this.nodeMap.get((child instanceof Light) ? "Lights" : "Nodes");
+        if (!root.getChildren().contains(child))
+            root.addChild(child);
     }
 }

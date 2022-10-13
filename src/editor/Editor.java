@@ -5,6 +5,10 @@ import dream.components.mesh.Mesh;
 import dream.components.mesh.MeshFactory;
 import dream.components.mesh.MeshRenderer;
 import dream.components.transform.Transform;
+import dream.light.DirectionalLight;
+import dream.light.Light;
+import dream.light.PointLight;
+import dream.light.SpotLight;
 import dream.managers.ResourcePool;
 import dream.managers.WindowManager;
 import dream.node.Node;
@@ -90,23 +94,27 @@ public class Editor
         this.editorWindows.put(Constants.engineSettings, new EngineSettings());
         this.editorWindows.put(Constants.editorOutput, new EditorWindow("Output"));
 
-        Node n = new Node();
+        Scene scene = new Scene();
 
         Shape shape = new Shape();
-        //shape.setTexture("crate diffuse.png");
+        shape.setTextures("crate diffuse.png", "crate specular.png");
+
         shape.setShader(ResourcePool.defaultMesh());
-        n.addChild(shape);
+        scene.addChild(shape);
 
-        Shape s2 = new Shape();
-        s2.setName("Light");
-        s2.setShader(ResourcePool.defaultLight());
-        n.addChild(s2);
-        Transform t = s2.getComponent(Transform.class);
-        t.scale.set(0.25f);
+        Light light = new SpotLight();
+        light.position.set(1.2f, 1.0f, 2.0f);
+        scene.addChild(light);
+
+        Shape lightCube = new Shape();
+        lightCube.setName("Light Cube");
+        lightCube.setShader(ResourcePool.defaultLight());
+        lightCube.start();
+        Transform t = lightCube.getComponent(Transform.class);
         t.position.set(1.2f, 1.0f, 2.0f);
-        s2.getComponent(Material.class).diffuse.set(1.0f);
+        t.scale.set(0.2f);
+        scene.addChild(lightCube);
 
-        Scene scene = new Scene(n);
         viewport.setScene(scene);
         sceneGraph.setScene(scene);
 

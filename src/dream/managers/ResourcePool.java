@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static dream.shader.ShaderConstants.*;
+
 public final class ResourcePool
 {
     private static final int[] systemIcons = new int[Icons.total];
@@ -26,11 +28,21 @@ public final class ResourcePool
         {
             ResourcePool.mesh = addAndGetShader("default.glsl");
             ResourcePool.mesh.onStart();
-            ResourcePool.mesh.storeUniforms(
-                    ShaderConstants.projection, ShaderConstants.view,
-                    ShaderConstants.transformation, ShaderConstants.color,
-                    ShaderConstants.lightColor, ShaderConstants.lightPosition,
-                    ShaderConstants.inverseNormals, ShaderConstants.viewPosition);
+            ResourcePool.mesh.storeUniforms
+            (
+                    // Vertex Data
+                    projection, view, transformation, inverseNormals, viewPosition,
+
+                    // Material Data
+                    materialDiffuseMap, materialHasDiffuseMap, materialDiffuse,
+                    materialSpecular, materialHasSpecularMap, materialSpecularMap,
+                    materialReflectance,
+
+                    // Light Data
+                    lightPosition, lightType, lightAmbient, lightDiffuse,
+                    lightSpecular, lightDirection, lightConstant, lightLinear,
+                    lightQuadratic, lightCutoff, lightOuterCutoff
+            );
         }
         return ResourcePool.mesh;
     }
@@ -39,10 +51,10 @@ public final class ResourcePool
     {
         if(ResourcePool.light == null)
         {
-            ResourcePool.light = addAndGetShader("color.glsl");
+            ResourcePool.light = addAndGetShader("blank.glsl");
             ResourcePool.light.onStart();
             ResourcePool.light.storeUniforms(ShaderConstants.projection, ShaderConstants.view,
-                    ShaderConstants.transformation, ShaderConstants.color);
+                    ShaderConstants.transformation);
         }
         return ResourcePool.light;
     }

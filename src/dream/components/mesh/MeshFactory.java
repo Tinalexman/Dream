@@ -212,17 +212,8 @@ public class MeshFactory
 
                 vertexCount += 3;
                 textureCount += 2;
-
             }
         }
-
-//        for(int row = 0; row < subdivisions; row++)
-//        {
-//            for(int column = 0; column < subdivisions; column++)
-//            {
-//
-//            }
-//        }
 
         int[] properties = mesh.properties();
         properties[0] = mesh.vertices.length;

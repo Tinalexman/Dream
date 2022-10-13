@@ -11,6 +11,8 @@ public class Node
 
     protected String name;
     protected int ID;
+    protected boolean visible;
+    protected boolean changed;
     protected final List<Node> children;
     protected final List<Component> components;
 
@@ -18,6 +20,8 @@ public class Node
     {
         this.name = name;
         this.ID = Node.counter++;
+        this.changed = true;
+        this.visible = true;
         this.children = new ArrayList<>();
         this.components = new ArrayList<>();
     }
@@ -35,6 +39,26 @@ public class Node
     public void setName(String name)
     {
         this.name = name;
+    }
+
+    public boolean isChanged()
+    {
+        return this.changed;
+    }
+
+    public void isChanged(boolean changed)
+    {
+        this.changed = changed;
+    }
+
+    public boolean isVisible()
+    {
+        return this.visible;
+    }
+
+    public void isVisible(boolean visible)
+    {
+        this.visible = visible;
     }
 
     public int getID()
@@ -88,6 +112,11 @@ public class Node
     }
 
     public void stop()
+    {
+
+    }
+
+    public void attach(Node node)
     {
 
     }

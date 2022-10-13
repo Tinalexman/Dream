@@ -12,12 +12,12 @@ public class ShaderConstants
     public static final String direction = "direction";
     public static final String viewPosition = "viewPosition";
 
-    public static final String lightPosition = "lightPosition";
     public static final String lightColor = "lightColor";
     public static final String inverseNormals = "inverseNormals";
 
 
     public static final String material = "material";
+    public static final String light = "light";
     public static final String diffuse = "diffuse";
     public static final String ambient = "ambient";
     public static final String specular = "specular";
@@ -32,38 +32,26 @@ public class ShaderConstants
     public static final String ambientLight = "ambientLight";
 
 
-    public static final String directionalLight = "directionalLight";
-    public static final String spotLight = "spotLight";
-    public static final String pointLight = "pointLight";
-    public static final String light = "light";
 
     // Combined
     public static final String materialDiffuse = material + "." + diffuse;
     public static final String materialSpecular = material + "." + specular;
     public static final String materialReflectance = material + "." + reflectance;
+    public static final String materialDiffuseMap = material + ".diffuseMap";
+    public static final String materialHasDiffuseMap = material + ".hasDiffuseMap";
+    public static final String materialHasSpecularMap = material + ".hasSpecularMap";
+    public static final String materialSpecularMap = material + ".specularMap";
 
-    public static final String directionalLightDiffuse = directionalLight + "." + diffuse;
-    public static final String directionalLightAmbient = directionalLight + "." + ambient;
-    public static final String directionalLightSpecular = directionalLight + "." + specular;
-    public static final String directionalLightDirection = directionalLight + "." + direction;
-    public static final String directionalLightActive = directionalLight + "." + isActive;
-
-    public static final String pointLightDiffuse = pointLight + "." + diffuse;
-    public static final String pointLightAmbient = pointLight + "." + ambient;
-    public static final String pointLightSpecular = pointLight + "." + specular;
-    public static final String pointLightPosition = pointLight + "." + position;
-    public static final String pointLightConstant = pointLight + "." + constant;
-    public static final String pointLightLinear = pointLight + "." + linear;
-    public static final String pointLightQuadratic = pointLight + "." + quadratic;
-    public static final String pointLightActive = pointLight + "." + isActive;
-
-    public static final String spotLightDiffuse = spotLight + "." + diffuse;
-    public static final String spotLightAmbient = spotLight + "." + ambient;
-    public static final String spotLightSpecular = spotLight + "." + specular;
-    public static final String spotLightPosition = spotLight + "." + position;
-    public static final String spotLightDirection = spotLight + "." + direction;
-    public static final String spotLightCutoff = spotLight + "." + cutoff;
-    public static final String spotLightOuterCutoff = spotLight + "." + outerCutoff;
-    public static final String spotLightActive = spotLight + "." + isActive;
+    public static final String lightDiffuse = light + "." + diffuse;
+    public static final String lightSpecular = light + "." + specular;
+    public static final String lightAmbient = light + "." + ambient;
+    public static final String lightPosition = light + "." + position;
+    public static final String lightDirection = light + "." + direction;
+    public static final String lightType = light + ".type";
+    public static final String lightConstant = light + "." + "constant";
+    public static final String lightLinear = light + "." + "linear";
+    public static final String lightQuadratic = light + "." + "quadratic";
+    public static final String lightCutoff = light + "." + "cutoff";
+    public static final String lightOuterCutoff = light + "." + "outerCutoff";
 
 }

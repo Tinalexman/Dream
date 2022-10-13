@@ -6,6 +6,11 @@ import dream.components.mesh.Mesh;
 import dream.components.mesh.MeshRenderer;
 import dream.components.transform.Transform;
 import dream.graphics.icon.Icons;
+import dream.graphics.texture.Texture;
+import dream.light.DirectionalLight;
+import dream.light.Light;
+import dream.light.PointLight;
+import dream.light.SpotLight;
 import dream.managers.ResourcePool;
 import dream.node.Node;
 import dream.util.collection.Join;
@@ -17,8 +22,6 @@ import imgui.flag.ImGuiTreeNodeFlags;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImInt;
 import org.joml.Vector3f;
-
-import java.util.List;
 
 public class EditorInspector extends EditorWindow
 {
@@ -79,13 +82,23 @@ public class EditorInspector extends EditorWindow
 
     private void showComponents()
     {
-        if(this.selection.value == null)
+        Node selected;
+        if((selected = this.selection.value) == null)
             return;
+
+        boolean visibility = Controls.drawBooleanControl(selected.isVisible(), "Visibility");
+        selected.isVisible(visibility);
+
+        if(selected instanceof Light light)
+        {
+            light(light);
+            return;
+        }
 
         ImGui.pushStyleColor(ImGuiCol.Header, 0, 0, 0, 0);
         ImGui.pushStyleColor(ImGuiCol.HeaderHovered, 0, 0, 0, 0);
         ImGui.pushStyleColor(ImGuiCol.HeaderActive, 0, 0, 0, 0);
-        for (Component c : this.selection.value.getComponents())
+        for (Component c : selected.getComponents())
         {
             if (ImGui.collapsingHeader(c.getClass().getSimpleName(), ImGuiTreeNodeFlags.DefaultOpen))
             {
@@ -100,6 +113,64 @@ public class EditorInspector extends EditorWindow
             }
         }
         ImGui.popStyleColor(3);
+    }
+
+    private void light(Light light)
+    {
+        if(light instanceof DirectionalLight directionalLight)
+        {
+            ImGui.text("Direction:");
+            ImGui.sameLine();
+            Controls.drawVector3Control("##pos", directionalLight.direction);
+        }
+        else
+        {
+            ImGui.text("Position:");
+            ImGui.sameLine();
+            Controls.drawVector3Control("##pos", light.position);
+        }
+
+        ImGui.text("Ambience:");
+        ImGui.sameLine();
+        Controls.colorPicker3("##ambient", light.ambient);
+
+        ImGui.text("Diffuse:");
+        ImGui.sameLine();
+        Controls.colorPicker3("##diffuse", light.diffuse);
+
+        ImGui.text("Specular:");
+        ImGui.sameLine();
+        Controls.colorPicker3("##specular", light.specular);
+
+        if(light instanceof PointLight pointLight)
+        {
+            float[] val = { pointLight.constant };
+            boolean res = Controls.dragFloat("Constant", val);
+            if(res)
+                pointLight.constant = val[0];
+
+            val[0] = pointLight.linear;
+            res = Controls.dragFloat("Linear", val);
+            if(res)
+                pointLight.linear = val[0];
+
+            val[0] = pointLight.quadratic;
+            res = Controls.dragFloat("Quadratic" ,val);
+            if(res)
+                pointLight.quadratic = val[0];
+        }
+        else if(light instanceof SpotLight spotLight)
+        {
+            float[] val = { spotLight.cutoff };
+            boolean res = Controls.dragFloat("CutOff", val);
+            if(res)
+                spotLight.cutoff = val[0];
+
+            val[0] = spotLight.outerCutoff;
+            res = Controls.dragFloat("Outer CutOff", val);
+            if(res)
+                spotLight.outerCutoff = val[0];
+        }
     }
 
     private void mesh(Mesh mesh)
@@ -180,24 +251,63 @@ public class EditorInspector extends EditorWindow
 
     private void material(Material material)
     {
-        ImGui.text("Ambient:");
-        ImGui.sameLine();
-
-        Controls.colorPicker3("##ambient", material.ambient);
-
-        ImGui.text("Diffuse:");
+        ImGui.text("Diffuse Color:");
         ImGui.sameLine();
         Controls.colorPicker3("##diffuse", material.diffuse);
 
-        ImGui.text("Specular:");
+        ImGui.text("Specular Color:");
         ImGui.sameLine();
         Controls.colorPicker3("##specular", material.specular);
 
-        if(material.hasTexture())
+        float width = 150.0f;
+
+        if(material.hasDiffuse())
         {
-            ImGui.text("Texture:");
+            Texture diffuse = material.getPack().diffuse;
+            int index = diffuse.filePath.lastIndexOf("\\");
+            String textureName = diffuse.filePath.substring(index + 1);
+
+            ImGui.text("Diffuse Map:");
             ImGui.sameLine();
-            ImGui.image(material.getPack().diffuse.ID, 32.0f, 32.0f, 0, 1, 1, 0);
+            ImGui.pushItemWidth(width);
+            ImGui.combo("##" + textureName, new ImInt(1), new String[]{"None", textureName},
+                    ImGuiComboFlags.NoArrowButton);
+            ImGui.popItemWidth();
+
+            if(ImGui.isItemHovered())
+            {
+                ImGui.beginTooltip();
+                ImGui.text(textureName);
+                ImGui.separator();
+                ImGui.sameLine(10.0f);
+                ImGui.image(diffuse.ID, 80.0f, 80.0f, 0, 1, 1, 0);
+                ImGui.endTooltip();
+            }
+        }
+
+        if(material.hasSpecular())
+        {
+            Texture specular = material.getPack().specular;
+            int index = specular.filePath.lastIndexOf("\\");
+            String textureName = specular.filePath.substring(index + 1);
+
+            ImGui.text("Specular Map:");
+            ImGui.sameLine();
+            ImGui.pushItemWidth(width);
+            ImGui.combo("##" + textureName, new ImInt(1), new String[]{"None", textureName},
+                    ImGuiComboFlags.NoArrowButton);
+            ImGui.popItemWidth();
+
+            if(ImGui.isItemHovered())
+            {
+                ImGui.beginTooltip();
+                ImGui.text(textureName);
+                ImGui.separator();
+                ImGui.newLine();
+                ImGui.sameLine(10.0f);
+                ImGui.image(specular.ID, 80.0f, 80.0f, 0, 1, 1, 0);
+                ImGui.endTooltip();
+            }
         }
 
     }
