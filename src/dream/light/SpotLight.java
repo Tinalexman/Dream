@@ -13,7 +13,6 @@ public class SpotLight extends Light
     public SpotLight()
     {
         super();
-        this.name = "Spot Light";
         this.direction = new Vector3f(0.0f, -1.0f, 0.0f);
         this.cutoff = (float) Math.cos(Math.toRadians(12.5f));
         this.outerCutoff = (float) Math.cos(Math.toRadians(17.5f));

@@ -1,9 +1,5 @@
 package editor;
 
-import dream.components.material.Material;
-import dream.components.mesh.Mesh;
-import dream.components.mesh.MeshFactory;
-import dream.components.mesh.MeshRenderer;
 import dream.components.transform.Transform;
 import dream.light.DirectionalLight;
 import dream.light.Light;
@@ -11,9 +7,7 @@ import dream.light.PointLight;
 import dream.light.SpotLight;
 import dream.managers.ResourcePool;
 import dream.managers.WindowManager;
-import dream.node.Node;
 import dream.scene.Scene;
-import dream.shader.ShaderConstants;
 import dream.shape.Shape;
 import editor.loader.Functions;
 import editor.util.Constants;
@@ -98,29 +92,25 @@ public class Editor
 
         Shape shape = new Shape();
         shape.setTextures("crate diffuse.png", "crate specular.png");
-
         shape.setShader(ResourcePool.defaultMesh());
         scene.addChild(shape);
 
         Light light = new SpotLight();
         light.position.set(1.2f, 1.0f, 2.0f);
-        scene.addChild(light);
-
-        Shape lightCube = new Shape();
-        lightCube.setName("Light Cube");
-        lightCube.setShader(ResourcePool.defaultLight());
-        lightCube.start();
-        Transform t = lightCube.getComponent(Transform.class);
-        t.position.set(1.2f, 1.0f, 2.0f);
-        t.scale.set(0.2f);
-        scene.addChild(lightCube);
+        scene.addLight(light);
+        light = new DirectionalLight();
+        scene.addLight(light);
+        light = new PointLight();
+        light.position.set(-1.2f, 1.0f, 2.0f);
+        scene.addLight(light);
 
         viewport.setScene(scene);
         sceneGraph.setScene(scene);
 
         inspector.setOnAddComponent(addComponent::activate);
-        inspector.setSelection(sceneGraph.getSelection());
-        addComponent.setSelectedNode(sceneGraph.getSelection());
+        inspector.setNode(sceneGraph.getNode());
+        inspector.setLight(sceneGraph.getLight());
+        addComponent.setSelectedNode(sceneGraph.getNode());
 
         //((EditorViewport) this.editorWindows.get("V")).setScene(scene);
     }

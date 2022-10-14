@@ -17,6 +17,7 @@ import dream.node.drawable.Drawable;
 import dream.scene.Scene;
 import dream.shader.Shader;
 
+import dream.shader.ShaderConstants;
 import editor.events.Event;
 import editor.events.EventManager;
 import editor.events.EventType;
@@ -86,7 +87,7 @@ public class Renderer implements Handler
             return;
 
         Node root = this.scene.getRoot();
-        Node lights = this.scene.getLights();
+        List<Light> lights = this.scene.getLights();
         if(root == null)
             return;
 
@@ -100,9 +101,9 @@ public class Renderer implements Handler
             return;
         }
 
-        render(root, lights.getChildren(), this.camera);
+        render(root, lights, this.camera);
         for(Node node : root.getChildren())
-            render(node, lights.getChildren(), this.camera);
+            render(node, lights, this.camera);
 
         this.frameBuffer.stop();
     }
@@ -122,7 +123,7 @@ public class Renderer implements Handler
     };
     Vector3f rotate = new Vector3f(1.0f, 0.3f, 0.5f);
 
-    private void render(Node node, List<Node> lights, Camera camera)
+    private void render(Node node, List<Light> lights, Camera camera)
     {
         Shader shader = (node instanceof Drawable drawable) ? drawable.getShader() : null;
         if(shader == null)
@@ -159,7 +160,7 @@ public class Renderer implements Handler
             return;
         }
 
-        loadLights(lights, shader, camera);
+        loadLights(lights, shader);
 
         //shader.loadUniform(transformation, transform.getMatrix());
         shader.loadUniform(view, camera.getView());
@@ -193,41 +194,43 @@ public class Renderer implements Handler
         shader.stop();
     }
 
-    private void loadLights(List<Node> lights, Shader shader, Camera camera)
+    private void loadLights(List<Light> lights, Shader shader)
     {
         float DIRECTIONAL_LIGHT = 1.0f, POINT_LIGHT = 2.0f, SPOT_LIGHT = 3.0f;
 
-        for(Node node : lights)
+        for(int i = 0; i < lights.size(); ++i)
         {
-            Light light = (Light) node;
-            shader.loadUniform(lightAmbient, light.ambient);
-            shader.loadUniform(lightDiffuse, light.diffuse);
-            shader.loadUniform(lightSpecular, light.specular);
+            Light light = lights.get(i);
+            if(!light.active)
+            {
+                shader.loadUniform("lights[" + i + "].type", 0);
+                continue;
+            }
+
+            shader.loadUniform("lights[" + i + "]." + ambient, light.ambient);
+            shader.loadUniform("lights[" + i + "]." + diffuse, light.diffuse);
+            shader.loadUniform("lights[" + i + "]." + specular, light.specular);
 
             if(light instanceof DirectionalLight directionalLight)
             {
-                shader.loadUniform(lightType, DIRECTIONAL_LIGHT);
-                shader.loadUniform(lightDirection, directionalLight.direction);
+                shader.loadUniform("lights[" + i + "].type", DIRECTIONAL_LIGHT);
+                shader.loadUniform("lights[" + i + "]." + direction, directionalLight.direction);
             }
             else if(light instanceof PointLight pointLight)
             {
-                shader.loadUniform(lightType, POINT_LIGHT);
-                shader.loadUniform(lightPosition, light.position);
-                shader.loadUniform(lightConstant, pointLight.constant);
-                shader.loadUniform(lightLinear, pointLight.linear);
-                shader.loadUniform(lightQuadratic, pointLight.quadratic);
+                shader.loadUniform("lights[" + i + "].type", POINT_LIGHT);
+                shader.loadUniform("lights[" + i + "]." + ShaderConstants.position, light.position);
+                shader.loadUniform("lights[" + i + "]." + constant, pointLight.constant);
+                shader.loadUniform("lights[" + i + "]." + linear, pointLight.linear);
+                shader.loadUniform("lights[" + i + "]." + quadratic, pointLight.quadratic);
             }
             else if(light instanceof SpotLight spotLight)
             {
-                shader.loadUniform(lightType, SPOT_LIGHT);
-
-                shader.loadUniform(lightPosition, camera.getPosition());
-                shader.loadUniform(lightDirection, camera.getForward());
-
-//                shader.loadUniform(lightPosition, light.position);
-//                shader.loadUniform(lightDirection, spotLight.direction);
-                shader.loadUniform(lightCutoff, spotLight.cutoff);
-                shader.loadUniform(lightOuterCutoff, spotLight.outerCutoff);
+                shader.loadUniform("lights[" + i + "].type", SPOT_LIGHT);
+                shader.loadUniform("lights[" + i + "]." + ShaderConstants.position, light.position);
+                shader.loadUniform("lights[" + i + "]." + direction, spotLight.direction);
+                shader.loadUniform("lights[" + i + "]." + cutoff, spotLight.cutoff);
+                shader.loadUniform("lights[" + i + "]." + outerCutoff, spotLight.outerCutoff);
             }
         }
     }

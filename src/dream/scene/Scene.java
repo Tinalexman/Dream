@@ -3,19 +3,19 @@ package dream.scene;
 import dream.light.Light;
 import dream.node.Node;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Scene
 {
-    private final Map<String, Node> nodeMap;
+    private final Node root;
+    private final List<Light> lights;
+    public static final int maxLights = 5;
 
     public Scene(Node root)
     {
-        this.nodeMap = new HashMap<>();
-        this.nodeMap.put("Lights", new Node());
-        this.nodeMap.put("Nodes", root);
-
+        this.root = root;
+        this.lights = new ArrayList<>();
         root.start();
     }
 
@@ -26,18 +26,30 @@ public class Scene
 
     public Node getRoot()
     {
-        return this.nodeMap.get("Nodes");
+        return this.root;
     }
 
-   public Node getLights()
+   public List<Light> getLights()
    {
-       return this.nodeMap.get("Lights");
+       return this.lights;
+   }
+
+   public void addLight(Light light)
+   {
+       if(this.lights.size() == maxLights)
+           return;
+
+       this.lights.add(light);
+   }
+
+   public void removeLight(Light light)
+   {
+       this.lights.remove(light);
    }
 
     public void addChild(Node child)
     {
-        Node root = this.nodeMap.get((child instanceof Light) ? "Lights" : "Nodes");
-        if (!root.getChildren().contains(child))
-            root.addChild(child);
+        if (!this.root.getChildren().contains(child))
+            this.root.addChild(child);
     }
 }

@@ -2,6 +2,7 @@ package dream.managers;
 
 import dream.Engine;
 import dream.graphics.texture.Texture;
+import dream.scene.Scene;
 import dream.shader.Shader;
 import dream.graphics.icon.Icons;
 import dream.shader.ShaderConstants;
@@ -36,13 +37,21 @@ public final class ResourcePool
                     // Material Data
                     materialDiffuseMap, materialHasDiffuseMap, materialDiffuse,
                     materialSpecular, materialHasSpecularMap, materialSpecularMap,
-                    materialReflectance,
-
-                    // Light Data
-                    lightPosition, lightType, lightAmbient, lightDiffuse,
-                    lightSpecular, lightDirection, lightConstant, lightLinear,
-                    lightQuadratic, lightCutoff, lightOuterCutoff
+                    materialReflectance
             );
+
+            for(int i = 0; i < Scene.maxLights; ++i)
+            {
+                ResourcePool.mesh.storeUniforms
+                (
+                    "lights[" + i + "]." + ambient, "lights[" + i + "]." + diffuse,
+                    "lights[" + i + "]." + specular, "lights[" + i + "].type",
+                    "lights[" + i + "]." + direction, "lights[" + i + "]." + position,
+                    "lights[" + i + "]." + constant, "lights[" + i + "]." + linear,
+                    "lights[" + i + "]." + quadratic, "lights[" + i + "]." + cutoff,
+                    "lights[" + i + "]." + outerCutoff
+                );
+            }
         }
         return ResourcePool.mesh;
     }

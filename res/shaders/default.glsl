@@ -29,9 +29,12 @@ void main()
 #type FRAGMENT
 #version 330 core
 
-const float DIRECTIONAL_LIGHT = 1;
-const float POINT_LIGHT = 2;
-const float SPOT_LIGHT = 3;
+const float DIRECTIONAL_LIGHT = 1.0;
+const float POINT_LIGHT = 2.0;
+const float SPOT_LIGHT = 3.0;
+
+const float AMBIENCE = 0.5;
+const int MAX_LIGHTS = 5;
 
 in vec3 vertexNormal;
 in vec2 vertexTexture;
@@ -71,68 +74,92 @@ struct Light
     float type;
 };
 
-uniform Light light;
+uniform Light lights[MAX_LIGHTS];
 uniform Material material;
 
 uniform vec3 viewPosition;
+
+vec3 directionalLight(Light light, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor)
+{
+    vec3 lightDirection = normalize(-light.direction);
+    float diff = max(dot(normal, lightDirection), 0.0);
+    vec3 reflectDirection = reflect(-lightDirection, normal);
+    float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), material.reflectance);
+
+    vec3 ambient = light.ambient * diffuseColor;
+    vec3 diffuse = light.diffuse * diff * diffuseColor;
+    vec3 specular = light.specular * spec * specularColor;
+
+    return (ambient + diffuse + specular);
+}
+
+vec3 pointLight(Light light, vec3 normal, vec3 fragmentPosition, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor)
+{
+    vec3 lightDirection = normalize(light.position - fragmentPosition);
+    float diff = max(dot(normal, lightDirection), 0.0);
+    vec3 reflectDirection = reflect(-lightDirection, normal);
+    float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), material.reflectance);
+
+    float distance = length(light.position - fragmentPosition);
+    float attenuation = 1.0 / (light.constant + (light.linear * distance) + (light.quadratic * distance * distance));
+
+    vec3 ambient = light.ambient * diffuseColor * attenuation;
+    vec3 diffuse = light.diffuse * diff * diffuseColor * attenuation;
+    vec3 specular = light.specular * spec * attenuation * specularColor;
+
+    return (ambient + diffuse + specular);
+}
+
+vec3 spotLight(Light light, vec3 normal, vec3 fragmentPosition, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor)
+{
+    vec3 lightDirection = normalize(light.position - fragmentPosition);
+    float diff = max(dot(normal, lightDirection), 0.0);
+    vec3 reflectDirection = reflect(-lightDirection, normal);
+    float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), material.reflectance);
+
+    float theta = dot(lightDirection, normalize(-light.direction));
+    float epsilon = light.cutoff - light.outerCutoff;
+    float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
+
+    vec3 ambient = light.ambient * diffuseColor;
+    vec3 diffuse = light.diffuse * diff * diffuseColor;
+    vec3 specular = light.specular * spec * specularColor;
+
+    diffuse *= intensity;
+    specular *= intensity;
+
+    return (ambient + diffuse + specular);
+}
 
 void main()
 {
     vec4 diffuseColor = vec4(0.0);
     vec4 specularColor = vec4(0.0);
-    vec3 ambient = vec3(0.0);
 
-    if(material.hasDiffuseMap == 1.0)
-    {
-        diffuseColor = texture(material.diffuseMap, vertexTexture);
-        ambient = diffuseColor.xyz * light.ambient;
-    }
-    else
-    {
-        diffuseColor = vec4(material.diffuse, 1.0);
-        ambient = vec3(0.1) * material.diffuse * light.ambient;
-    }
+    diffuseColor = (material.hasDiffuseMap == 1.0) ?
+    texture(material.diffuseMap, vertexTexture) : vec4(material.diffuse, 1.0);
 
     specularColor =  (material.hasSpecularMap == 1.0) ?
-        texture(material.specularMap, vertexTexture) : material.specular;
+    texture(material.specularMap, vertexTexture) : vec4(material.specular, 1.0);
 
-    vec3 norm = normalize(vertexNormal);
-    vec3 lightDirection = vec3(0.0);
-
-    if(light.type == DIRECTIONAL_LIGHT)
-        lightDirection = normalize(-light.direction);
-    else if(light.type == POINT_LIGHT || light.type == SPOT_LIGHT)
-        lightDirection = normalize(light.position - fragmentPosition);
-
-    float diffuseStrength = max(dot(norm, lightDirection), 0.0);
-    vec3 diffuse = diffuseStrength * light.diffuse * diffuseColor.xyz;
-
+    vec3 normal = normalize(vertexNormal);
     vec3 viewDirection = normalize(viewPosition - fragmentPosition);
-    vec3 reflectDirection = reflect(-lightDirection, norm);
-    float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), material.reflectance);
-    vec3 specular = specularColor.xyz * spec * light.specular;
 
-    if(light.type == POINT_LIGHT)
+    vec3 result = vec3(0.0);
+
+    for(int i = 0; i < MAX_LIGHTS; i++)
     {
-        float distance = length(light.position - fragmentPosition);
-        float attenuation = 1.0 / (light.constant + light.linear * distance +
-        light.quadratic * (distance * distance));
-
-        ambient *= attenuation;
-        diffuse *= attenuation;
-        specular *= attenuation;
+        Light light = lights[i];
+        if(light.type == DIRECTIONAL_LIGHT) // If the light is a directional light
+            result += directionalLight(light, normal, viewDirection, diffuseColor.xyz, specularColor.xyz);
+        else if(light.type == POINT_LIGHT) // If the light is a point light
+            result += pointLight(light, normal, fragmentPosition, viewDirection, diffuseColor.xyz, specularColor.xyz);
+        else if(light.type == SPOT_LIGHT) // If the light is a spot light
+            result += spotLight(light, normal, fragmentPosition, viewDirection, diffuseColor.xyz, specularColor.xyz);
     }
 
-    if(light.type == SPOT_LIGHT)
-    {
-        float theta = dot(lightDirection, normalize(-light.direction));
-        float epsilon = (light.cutoff - light.outerCutoff);
-        float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
-        diffuse  *= intensity;
-        specular *= intensity;
-    }
-
-    vec3 result = ambient + diffuse + specular;
+    if(result == vec3(0.0)) // If no lights are present
+        result = vec3(AMBIENCE) * diffuseColor.xyz; // Use ambient lighting
 
     outColor = vec4(result, 1.0);
 }

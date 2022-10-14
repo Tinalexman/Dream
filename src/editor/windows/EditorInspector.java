@@ -25,7 +25,9 @@ import org.joml.Vector3f;
 
 public class EditorInspector extends EditorWindow
 {
-    private Join<Node> selection;
+    private Join<Node> node;
+    private Join<Light> light;
+
     private Runnable onAddComponent;
 
     public EditorInspector()
@@ -39,9 +41,14 @@ public class EditorInspector extends EditorWindow
         this.onAddComponent = onAddComponent;
     }
 
-    public void setSelection(Join<Node> selection)
+    public void setNode(Join<Node> node)
     {
-        this.selection = selection;
+        this.node = node;
+    }
+
+    public void setLight(Join<Light> light)
+    {
+        this.light = light;
     }
 
     @Override
@@ -53,9 +60,19 @@ public class EditorInspector extends EditorWindow
         ImGui.beginChild("##inspector", width, height, true, ImGuiWindowFlags.HorizontalScrollbar);
 
         showComponents();
+        showLights();
 
         ImGui.endChild();
         ImGui.end();
+    }
+
+    private void showLights()
+    {
+        Light light;
+        if((light = this.light.value) == null)
+            return;
+
+        light(light);
     }
 
     private void showMenuBar()
@@ -83,17 +100,11 @@ public class EditorInspector extends EditorWindow
     private void showComponents()
     {
         Node selected;
-        if((selected = this.selection.value) == null)
+        if((selected = this.node.value) == null)
             return;
 
         boolean visibility = Controls.drawBooleanControl(selected.isVisible(), "Visibility");
         selected.isVisible(visibility);
-
-        if(selected instanceof Light light)
-        {
-            light(light);
-            return;
-        }
 
         ImGui.pushStyleColor(ImGuiCol.Header, 0, 0, 0, 0);
         ImGui.pushStyleColor(ImGuiCol.HeaderHovered, 0, 0, 0, 0);
@@ -117,6 +128,8 @@ public class EditorInspector extends EditorWindow
 
     private void light(Light light)
     {
+        light.active = Controls.drawBooleanControl(light.active, "Visibility");
+
         if(light instanceof DirectionalLight directionalLight)
         {
             ImGui.text("Direction:");

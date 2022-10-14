@@ -11,7 +11,6 @@ public final class DirectionalLight extends Light
     public DirectionalLight()
     {
         super();
-        this.name = "Directional Light";
         this.direction = new Vector3f(-0.2f, -1.0f, -0.3f);
     }
 
