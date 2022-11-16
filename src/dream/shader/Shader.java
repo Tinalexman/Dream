@@ -117,11 +117,6 @@ public class Shader
         glDeleteShader(fragmentShader);
     }
 
-    public Map<String, Integer> getUniformVariables()
-    {
-        return this.uniformVariables;
-    }
-
     public void start()
     {
         glUseProgram(this.programID);

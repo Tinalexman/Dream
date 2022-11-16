@@ -10,8 +10,9 @@ uniform mat4 view;
 
 void main()
 {
-    gl_Position = projection * view * vec4(vertices, 1.0);
+    vec4 position = projection * view * vec4(vertices, 1.0);
     textures = vertices;
+    gl_Position = position.xyww;
 }
 
 #type FRAGMENT

@@ -251,10 +251,12 @@ public class Controls
         ImGui.popStyleColor(4);
     }
 
-    public static boolean colorPicker4(String label, Vector4f color)
+    public static void colorPicker4(String label, Vector4f color)
     {
         float[] colors = {color.x, color.y, color.z, color.w};
-        boolean change = ImGui.colorEdit4(label, colors, ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.NoLabel);
+        ImGui.text(label + ":");
+        ImGui.sameLine();
+        boolean change = ImGui.colorEdit4("##" + label, colors, ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.NoLabel);
         if(change)
         {
             color.x = colors[0];
@@ -262,7 +264,6 @@ public class Controls
             color.z = colors[2];
             color.w = colors[3];
         }
-        return change;
     }
 
     public static boolean colorPicker4(String label, float[] colors)

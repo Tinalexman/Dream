@@ -1,10 +1,10 @@
 package dream.managers;
 
 import dream.Engine;
-import dream.graphics.texture.Texture;
-import dream.scene.Scene;
-import dream.shader.Shader;
 import dream.graphics.icon.Icons;
+import dream.graphics.texture.Texture;
+import dream.light.Light;
+import dream.shader.Shader;
 import dream.shader.ShaderConstants;
 
 import java.io.File;
@@ -40,7 +40,7 @@ public final class ResourcePool
                     materialReflectance
             );
 
-            for(int i = 0; i < Scene.maxLights; ++i)
+            for(int i = 0; i < Light.maxLights; ++i)
             {
                 ResourcePool.mesh.storeUniforms
                 (
@@ -174,6 +174,12 @@ public final class ResourcePool
             ID = Icons.plus;
         else if(textureName.startsWith("minus"))
             ID = Icons.minus;
+        else if(textureName.startsWith("folder"))
+            ID = Icons.folder;
+        else if(textureName.startsWith("toolbox"))
+            ID = Icons.toolbox;
+        else if(textureName.startsWith("trash"))
+            ID = Icons.trash;
 
         return ID;
     }

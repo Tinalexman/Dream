@@ -1,55 +1,72 @@
 package dream.scene;
 
-import dream.light.Light;
 import dream.node.Node;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Scene
 {
+    private String name;
     private final Node root;
-    private final List<Light> lights;
-    public static final int maxLights = 5;
 
     public Scene(Node root)
     {
+        this("Scene", root);
+    }
+
+    public Scene(String name, Node root)
+    {
+        this.name = name;
         this.root = root;
-        this.lights = new ArrayList<>();
-        root.start();
+        this.root.start();
     }
 
     public Scene()
     {
-        this(new Node());
+        this("Scene", new Node());
     }
 
-    public Node getRoot()
+    public String name()
+    {
+        return this.name;
+    }
+
+    public void name(String name)
+    {
+        this.name = name;
+    }
+
+    public Node root()
     {
         return this.root;
     }
 
-   public List<Light> getLights()
-   {
-       return this.lights;
-   }
-
-   public void addLight(Light light)
-   {
-       if(this.lights.size() == maxLights)
-           return;
-
-       this.lights.add(light);
-   }
-
-   public void removeLight(Light light)
-   {
-       this.lights.remove(light);
-   }
-
-    public void addChild(Node child)
+    public void add(Node child)
     {
         if (!this.root.getChildren().contains(child))
+        {
+            String className = child.getClass().getSimpleName();
+            if(child.name().equalsIgnoreCase(className))
+            {
+                int ordinal = nextOrdinalFor(child.getClass());
+                if(ordinal > 1)
+                    child.name(child.name() + " " + ordinal);
+            }
             this.root.addChild(child);
+        }
+    }
+
+    public void remove(Node node)
+    {
+        this.root.getChildren().remove(node);
+    }
+
+    private int nextOrdinalFor(Class<? extends Node> object)
+    {
+        int count = 0;
+        for(Node node : this.root.getChildren())
+        {
+            if(node.getClass().isAssignableFrom(object))
+                ++count;
+        }
+        return count + 1;
     }
 }

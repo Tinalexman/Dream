@@ -1,6 +1,7 @@
 package dream;
 
 
+import dream.postprocessing.FilterManager;
 import editor.events.EventManager;
 import dream.io.Input;
 import dream.managers.ResourcePool;
@@ -42,6 +43,7 @@ public class Engine
         Input.initialize(mainWindowID);
 
         ResourcePool.loadIcons();
+        FilterManager.createFilters();
 
         Engine.editor = new Editor();
         Engine.editor.initialize(mainWindowID);

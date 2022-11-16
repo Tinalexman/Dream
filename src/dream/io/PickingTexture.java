@@ -11,7 +11,7 @@ public class PickingTexture
     private int FBO_ID;
     private int depthTextureID;
 
-    protected PickingTexture(int width, int height)
+    public PickingTexture(int width, int height)
     {
         if(!init(width, height))
             throw new RuntimeException("Picking Texture's FrameBuffer could not be completed!");
@@ -66,7 +66,6 @@ public class PickingTexture
 
         float[] pixels = new float[3];
         glReadPixels(xCoordinate, yCoordinate, 1, 1, GL_RGB, GL_FLOAT, pixels);
-
         pixels[0] = Math.round(pixels[0] * maxColorRange);
         pixels[1] = Math.round(pixels[1] * maxColorRange);
         pixels[2] = Math.round(pixels[2] * maxColorRange);

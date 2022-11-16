@@ -202,7 +202,7 @@ public class Input
         coordinates[0] = (windowSize[0] / viewportSize[0]) * coordinates[0];
 
         coordinates[1] = Input.instance.currentYPosition - viewportPosition[1];
-        coordinates[1] = (windowSize[1] / viewportSize[1]) * coordinates[1];
+        coordinates[1] = windowSize[1] - ((windowSize[1] / viewportSize[1]) * coordinates[1]);
 
         return coordinates;
     }

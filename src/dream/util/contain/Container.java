@@ -35,7 +35,7 @@ public class Container<T> implements Containable<T>
     }
 
     @Override
-    public T getValue()
+    public T value()
     {
         return this.value;
     }
@@ -57,7 +57,7 @@ public class Container<T> implements Containable<T>
     }
 
     @Override
-    public String getName()
+    public String name()
     {
         return this.name;
     }

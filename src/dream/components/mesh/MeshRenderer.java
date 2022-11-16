@@ -36,7 +36,6 @@ public class MeshRenderer extends Component
         create();
     }
 
-
     private void create()
     {
         if(this.mesh == null)
@@ -150,6 +149,11 @@ public class MeshRenderer extends Component
     public void setFace(int val)
     {
         this.configuration.setFace(val);
+    }
+
+    public Mesh getMesh()
+    {
+        return this.mesh;
     }
 
     public static class Configuration

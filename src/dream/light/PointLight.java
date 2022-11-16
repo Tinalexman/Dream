@@ -13,6 +13,7 @@ public class PointLight extends Light
     public PointLight()
     {
         super();
+        this.name = "Point Light";
         this.constant = 1.0f;
         this.linear = 0.09f;
         this.quadratic = 0.032f;

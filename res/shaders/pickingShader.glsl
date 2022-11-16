@@ -17,8 +17,8 @@ void main()
 
 const float maxColorRange = 255.0;
 
-uniform int drawIndex;
-uniform int objectIndex;
+uniform float drawIndex;
+uniform float objectIndex;
 
 out vec3 outColor;
 

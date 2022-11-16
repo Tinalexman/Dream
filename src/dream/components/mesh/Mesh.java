@@ -1,10 +1,7 @@
 package dream.components.mesh;
 
-import dream.components.Component;
-
-public class Mesh extends Component
+public class Mesh
 {
-
     protected float[] vertices;
     protected float[] textures;
     protected float[] normals;
@@ -37,5 +34,43 @@ public class Mesh extends Component
         return this.properties;
     }
 
+    public float[] getVertices()
+    {
+        return this.vertices;
+    }
 
+    public float[] getTextures()
+    {
+        return this.textures;
+    }
+
+    public float[] getNormals()
+    {
+        return this.normals;
+    }
+
+    public int[] getIndices()
+    {
+        return this.indices;
+    }
+
+    public void setVertices(float[] vertices)
+    {
+        this.vertices = vertices;
+    }
+
+    public void setTextures(float[] textures)
+    {
+        this.textures = textures;
+    }
+
+    public void setNormals(float[] normals)
+    {
+        this.normals = normals;
+    }
+
+    public void setIndices(int[] indices)
+    {
+        this.indices = indices;
+    }
 }

@@ -11,6 +11,7 @@ public class EditorWindow
     protected int windowFlags;
     protected boolean isFocused;
 
+
     public EditorWindow(String title)
     {
         this(title, ImGuiWindowFlags.None);
@@ -22,6 +23,13 @@ public class EditorWindow
         this.title = title;
         this.windowFlags = flags;
         this.isFocused = true;
+
+        onConstructorEnd();
+    }
+
+    protected void onConstructorEnd()
+    {
+
     }
 
     public void activate()
@@ -36,9 +44,32 @@ public class EditorWindow
 
     public void show()
     {
-        ImGui.begin(this.title, this.windowFlags);
+        preview();
 
+        this.isActive = ImGui.begin(this.title, this.windowFlags);
+        float width = ImGui.getContentRegionAvail().x,  height = ImGui.getContentRegionAvail().y;
+
+        menu();
+        ImGui.beginChild("##" + this.title, width, height, true, ImGuiWindowFlags.HorizontalScrollbar);
+        contents();
+
+        ImGui.endChild();
         ImGui.end();
+    }
+
+    protected void preview()
+    {
+
+    }
+
+    protected void menu()
+    {
+
+    }
+
+    protected void contents()
+    {
+
     }
 
     public void input()

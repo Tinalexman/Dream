@@ -15,6 +15,13 @@ public class ShaderConstants
     public static final String lightColor = "lightColor";
     public static final String inverseNormals = "inverseNormals";
 
+    public static final String resolution = "resolution";
+    public static final String mouse = "mouse";
+    public static final String sampler = "sampler";
+
+    public static final String objectIndex = "objectIndex";
+    public static final String drawIndex = "drawIndex";
+
 
     public static final String material = "material";
     public static final String light = "light";
@@ -27,11 +34,7 @@ public class ShaderConstants
     public static final String quadratic = "quadratic";
     public static final String cutoff = "cutoff";
     public static final String outerCutoff = "outerCutoff";
-    public static final String isActive = "isActive";
-    public static final String sampler = "sampler";
-    public static final String ambientLight = "ambientLight";
-
-
+    public static final String highlight = "highlight";
 
     // Combined
     public static final String materialDiffuse = material + "." + diffuse;

@@ -6,6 +6,8 @@ import org.joml.Vector3f;
 
 public class Transform extends Component
 {
+    public Transform parent;
+
     public Vector3f position;
     public Vector3f orientation;
     public Vector3f scale;
@@ -26,11 +28,11 @@ public class Transform extends Component
         return this.position;
     }
 
-    public void incrementPosition(float xPosition, float yPosition, float zPosition)
+    public void incrementPosition(float x, float y, float z)
     {
-        this.position.x += xPosition;
-        this.position.y += yPosition;
-        this.position.z += zPosition;
+        this.position.x += x;
+        this.position.y += y;
+        this.position.z += z;
         this.changed = true;
     }
 
@@ -48,11 +50,11 @@ public class Transform extends Component
         return this.orientation;
     }
 
-    public void incrementRotation(float xRotation, float yRotation, float zRotation)
+    public void incrementRotation(float pitch, float yaw, float roll)
     {
-        this.orientation.x += xRotation;
-        this.orientation.y += yRotation;
-        this.orientation.z += zRotation;
+        this.orientation.x += pitch;
+        this.orientation.y += yaw;
+        this.orientation.z += roll;
 
         this.orientation.x %= 360.0f;
         this.orientation.y %= 360.0f;

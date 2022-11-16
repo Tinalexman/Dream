@@ -26,6 +26,19 @@ public class Texture
         load();
     }
 
+    public Texture()
+    {
+        this.width = this.height = this.ID = 0;
+        this.filePath = "Generated Texture";
+    }
+
+    public void set(int ID, int width, int height)
+    {
+        this.ID = ID;
+        this.width = width;
+        this.height = height;
+    }
+
     public void destroy()
     {
         glDeleteTextures(this.ID);

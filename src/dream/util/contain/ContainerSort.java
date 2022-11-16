@@ -8,13 +8,13 @@ public class ContainerSort implements Comparator<Containable>
     public int compare(Containable one, Containable two)
     {
         if(one.isContainer() && two.isContainer())
-            return one.getName().compareTo(one.getName());
+            return one.name().compareTo(one.name());
         else if(one.isContainer() && !two.isContainer())
             return -1;
         else if(!one.isContainer() && two.isContainer())
             return 1;
         else if(!one.isContainer() && !two.isContainer())
-            return one.getName().compareTo(two.getName());
+            return one.name().compareTo(two.name());
         return 0;
     }
 }

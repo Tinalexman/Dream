@@ -3,18 +3,23 @@ package dream.node;
 import dream.components.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Node
 {
-    private static int counter = 0;
+    private static int counter = 40;
+    private static final Map<Integer, Node> nodes = new HashMap<>();
 
     protected String name;
-    protected int ID;
+    protected final int ID;
     protected boolean visible;
     protected boolean changed;
     protected final List<Node> children;
     protected final List<Component> components;
+
+    protected Node parent;
 
     public Node(String name)
     {
@@ -22,8 +27,10 @@ public class Node
         this.ID = Node.counter++;
         this.changed = true;
         this.visible = true;
+        this.parent = null;
         this.children = new ArrayList<>();
         this.components = new ArrayList<>();
+        Node.nodes.put(this.ID, this);
     }
 
     public Node()
@@ -31,12 +38,12 @@ public class Node
         this("Node");
     }
 
-    public String getName()
+    public String name()
     {
         return this.name;
     }
 
-    public void setName(String name)
+    public void name(String name)
     {
         this.name = name;
     }
@@ -66,9 +73,9 @@ public class Node
         return this.ID;
     }
 
-    public void setID(int ID)
+    public static Node getNode(int ID)
     {
-        this.ID = ID;
+        return Node.nodes.getOrDefault(ID, null);
     }
 
     public List<Component> getComponents()
@@ -116,9 +123,14 @@ public class Node
 
     }
 
-    public void attach(Node node)
+    public void parent(Node parent)
     {
+        this.parent = parent;
+    }
 
+    public Node parent()
+    {
+        return this.parent;
     }
 
     public void removeComponent(Component component)
@@ -134,12 +146,14 @@ public class Node
     public void addChild(Node child)
     {
         this.children.add(child);
+        child.parent = this;
         child.start();
     }
 
     public void removeChild(Node child)
     {
         this.children.remove(child);
+        child.parent = null;
     }
 
     public boolean hasChildren()

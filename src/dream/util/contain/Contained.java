@@ -14,13 +14,13 @@ public class Contained<T> implements Containable<T>
     }
 
     @Override
-    public String getName()
+    public String name()
     {
         return this.name;
     }
 
     @Override
-    public T getValue()
+    public T value()
     {
         return this.node;
     }

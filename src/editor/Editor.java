@@ -1,140 +1,134 @@
 package editor;
 
-import dream.components.transform.Transform;
-import dream.light.DirectionalLight;
-import dream.light.Light;
-import dream.light.PointLight;
-import dream.light.SpotLight;
-import dream.managers.ResourcePool;
-import dream.managers.WindowManager;
+import dream.environment.Environment;
+import dream.node.Node;
 import dream.scene.Scene;
-import dream.shape.Shape;
-import editor.loader.Functions;
-import editor.util.Constants;
-import editor.util.components.ComponentTree;
-import editor.util.settings.RightTree;
-import editor.util.settings.LeftTree;
-import editor.windows.*;
-import editor.windows.modal.EngineSettings;
-import editor.windows.popup.AddComponent;
+import dream.util.collection.Join;
+import editor.gui.DearImGui;
+import editor.overrides.WindowOverrides;
+import editor.windows.ContentWindow;
+import editor.windows.Viewport;
+import editor.windows.EditorWindow;
+import editor.windows.interfaces.DoubleObservableWindow;
+import editor.windows.interfaces.ObservableWindow;
+import game.Game;
 import imgui.ImGui;
+import imgui.flag.ImGuiCol;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+
+import static editor.util.Constants.menuBarTabs;
 
 public class Editor
 {
-    private final Gui gui;
-    private final Map<String, EditorWindow> editorWindows;
+    private final DearImGui dearImGui;
+    private final Map<Integer, List<EditorWindow>> editorWindows;
+    private int currentMenuIndex;
 
     public Editor()
     {
-        this.gui = new Gui();
+        this.dearImGui = new DearImGui();
         this.editorWindows = new HashMap<>();
+        this.currentMenuIndex = 1;
     }
 
     public void initialize(long windowID)
     {
-        this.gui.create(windowID);
-        this.gui.setMenuBarCallBack(() ->
+        this.dearImGui.create(windowID);
+        this.dearImGui.setMenuBarCallBack(() ->
         {
             if(ImGui.beginMenuBar())
             {
-                if(ImGui.beginMenu("Home"))
+                for(int i = 0; i < menuBarTabs.length; i++)
                 {
-                    ImGui.menuItem("New Project", "Ctrl + N");
+                    boolean selected = this.currentMenuIndex == i;
+                    ImGui.pushStyleColor(ImGuiCol.Border, 0, 0, 0, 0);
+                    ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 50, 50, 50, 150);
 
-                    ImGui.menuItem("Open Project", "Ctrl + O");
+                    if(selected)
+                    {
+                        ImGui.pushStyleColor(ImGuiCol.Button, 40, 40, 40, 150);
+                        ImGui.pushStyleColor(ImGuiCol.ButtonActive, 80, 80, 80, 200);
+                    }
+                    else
+                    {
+                        ImGui.pushStyleColor(ImGuiCol.Button, 0, 0, 0, 0);
+                        ImGui.pushStyleColor(ImGuiCol.ButtonActive, 0, 0, 0, 0);
+                    }
 
-                    ImGui.separator();
-
-                    ImGui.menuItem("Save Project", "Ctrl + S");
-
-                    ImGui.separator();
-
-                    if(ImGui.menuItem("Quit"))
-                        WindowManager.closeMain();
-
-                    ImGui.endMenu();
-                }
-
-                if(ImGui.beginMenu("Preferences"))
-                {
-                    if(ImGui.menuItem("Engine Settings", "Ctrl + Alt + S"))
-                        editorWindows.get(Constants.engineSettings).activate();
-
-                    ImGui.endMenu();
+                    if(ImGui.button(menuBarTabs[i]))
+                        currentMenuIndex = i;
+                    ImGui.popStyleColor(4);
                 }
 
                 ImGui.endMenuBar();
             }
         });
 
-        LeftTree.initialize();
-        RightTree.initialize();
-        ComponentTree.initialize();
-        Functions.initialize(this.editorWindows);
+        // Scenes Windows
+        List<EditorWindow> sceneWindows = new ArrayList<>();
+        DoubleObservableWindow<Scene, Join<Node>> nodeGraph = WindowOverrides.sceneNodeGraph();
+        ObservableWindow<Join<Node>> inspector = WindowOverrides.sceneInspector();
+        Viewport<Scene> viewport = WindowOverrides.sceneViewport();
+        ContentWindow<Scene> contents = WindowOverrides.sceneContent();
+        Collections.addAll(sceneWindows, viewport, contents, inspector, nodeGraph);
+        this.editorWindows.put(1, sceneWindows);
 
-        //this.editorWindows.put("V", new EditorViewport("V"));
-        EditorSceneGraph sceneGraph = new EditorSceneGraph();
-        EditorInspector inspector = new EditorInspector();
-        EditorViewport viewport = new EditorViewport();
-        AddComponent addComponent = new AddComponent();
+        // Environment
+        List<EditorWindow> environmentWindows = new ArrayList<>();
+        Viewport<Environment> environmentViewport = WindowOverrides.environmentViewport();
+        EditorWindow environmentSettings = new EditorWindow("Settings");
+        Collections.addAll(environmentWindows, environmentSettings, environmentViewport);
+        this.editorWindows.put(2, environmentWindows);
 
-        this.editorWindows.put(Constants.editorViewport, viewport);
-        this.editorWindows.put(Constants.editorScenegraph, sceneGraph);
-        this.editorWindows.put(Constants.editorInspector, inspector);
-        this.editorWindows.put(Constants.editorAddComponent, addComponent);
-        this.editorWindows.put(Constants.engineSettings, new EngineSettings());
-        this.editorWindows.put(Constants.editorOutput, new EditorWindow("Output"));
+        // Materials
+        List<EditorWindow> materialWindows = new ArrayList<>();
+        EditorWindow materialInspector = new EditorWindow("Material Inspector");
+        EditorWindow materialView = new EditorWindow("Material View");
+        Collections.addAll(materialWindows, materialView, materialInspector);
+        this.editorWindows.put(3, materialWindows);
 
-        Scene scene = new Scene();
+        Scene scene = Game.game().mainScene();
+        environmentViewport.set(Game.game().getEnvironment());
 
-        Shape shape = new Shape();
-        shape.setTextures("crate diffuse.png", "crate specular.png");
-        shape.setShader(ResourcePool.defaultMesh());
-        scene.addChild(shape);
+        viewport.set(scene);
+        contents.addContent(scene);
 
-        Light light = new SpotLight();
-        light.position.set(1.2f, 1.0f, 2.0f);
-        scene.addLight(light);
-        light = new DirectionalLight();
-        scene.addLight(light);
-        light = new PointLight();
-        light.position.set(-1.2f, 1.0f, 2.0f);
-        scene.addLight(light);
+        Join<Node> join = new Join<>(scene.root());
+        nodeGraph.first(scene);
+        nodeGraph.second(join);
+        inspector.set(join);
 
-        viewport.setScene(scene);
-        sceneGraph.setScene(scene);
-
-        inspector.setOnAddComponent(addComponent::activate);
-        inspector.setNode(sceneGraph.getNode());
-        inspector.setLight(sceneGraph.getLight());
-        addComponent.setSelectedNode(sceneGraph.getNode());
-
-        //((EditorViewport) this.editorWindows.get("V")).setScene(scene);
+//        inspector.setLight(sceneGraph.getLight());
+        //viewport.getRenderer().setSelectedNode(sceneGraph.getNode());
     }
 
     public void refresh()
     {
-        this.gui.start();
+        this.dearImGui.start();
 
-        this.editorWindows.values().forEach(EditorWindow::show);
+        List<EditorWindow> windows = this.editorWindows.get(this.currentMenuIndex);
+        if(windows != null)
+            windows.forEach(EditorWindow::show);
+
         //ImGui.showStyleEditor();
         //ImGui.showDemoWindow();
 
-        this.gui.end();
+        this.dearImGui.end();
     }
 
     public void input()
     {
-        this.editorWindows.values().forEach(EditorWindow::input);
+        List<EditorWindow> windows = this.editorWindows.get(this.currentMenuIndex);
+        if(windows != null)
+            windows.forEach(EditorWindow::input);
     }
 
     public void destroy()
     {
-        this.gui.destroy();
-        this.editorWindows.values().forEach(EditorWindow::destroy);
+        this.dearImGui.destroy();
+        for(List<EditorWindow> window : this.editorWindows.values())
+            window.forEach(EditorWindow::destroy);
     }
 
 }

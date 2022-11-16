@@ -2,9 +2,16 @@ package dream.components.mesh;
 
 public class MeshFactory
 {
-
-    public static void asCube(Mesh mesh)
+    public enum Orientation
     {
+        xAxis,
+        yAxis,
+        zAxis
+    }
+
+    public static Mesh asCube()
+    {
+        Mesh mesh = new Mesh();
         mesh.vertices = cubeVertices(0.0f, 0.0f, 0.0f, 0.5f);
         mesh.normals = cubeNormals();
         mesh.textures = cubeTextures();
@@ -14,6 +21,8 @@ public class MeshFactory
         properties[1] = mesh.textures.length;
         properties[2] = mesh.normals.length;
         properties[3] = mesh.indices.length;
+
+        return mesh;
     }
 
     private static float[] cubeVertices(float x, float y, float z, float size)
@@ -166,8 +175,44 @@ public class MeshFactory
         };
     }
 
-    public static void createPlane(Mesh mesh, int subdivisions, float size)
+    private static void set(float[] vertices, float[] normals, int index, float first, float second, Orientation orientation)
     {
+        if(orientation == Orientation.xAxis)
+        {
+            vertices[index] = 0.0f;
+            vertices[index + 1] = first;
+            vertices[index + 2] = second;
+
+            normals[index] = 1.0f;
+            normals[index + 1] = 0.0f;
+            normals[index + 2] = 0.0f;
+        }
+        else if(orientation == Orientation.yAxis)
+        {
+            vertices[index] = first;
+            vertices[index + 1] = 0.0f;
+            vertices[index + 2] = second;
+
+            normals[index] = 0.0f;
+            normals[index + 1] = 1.0f;
+            normals[index + 2] = 0.0f;
+        }
+        else if(orientation == Orientation.zAxis)
+        {
+            vertices[index] = first;
+            vertices[index + 1] = second;
+            vertices[index + 2] = 0.0f;
+
+            normals[index] = 0.0f;
+            normals[index + 1] = 0.0f;
+            normals[index + 2] = 1.0f;
+        }
+    }
+
+    public static Mesh createPlane(int subdivisions, float size, Orientation orientation)
+    {
+        Mesh mesh = new Mesh();
+
         float increment = (size * 2.0f) / subdivisions;
         float x = -size, z = -size;
 
@@ -186,16 +231,13 @@ public class MeshFactory
         {
             for(int column = 0; column < (subdivisions + 1); column++)
             {
-                mesh.vertices[vertexCount] = x + (column * increment);
-                mesh.vertices[vertexCount + 1] = 0.0f;
-                mesh.vertices[vertexCount + 2] = z + (row * increment);
+                float first = x + (column * increment);
+                float second = z + (row * increment);
+
+                set(mesh.vertices, mesh.normals, vertexCount, first, second, orientation);
 
                 mesh.textures[textureCount] = (float) column / subdivisions;
                 mesh.textures[textureCount + 1] = (float) row / subdivisions;
-
-                mesh.normals[vertexCount] = 0.0f;
-                mesh.normals[vertexCount + 1] = 1.0f;
-                mesh.normals[vertexCount + 2] = 0.0f;
 
                 if(row < subdivisions && column < subdivisions)
                 {
@@ -220,6 +262,12 @@ public class MeshFactory
         properties[1] = mesh.textures.length;
         properties[2] = mesh.normals.length;
         properties[3] = mesh.indices.length;
+
+        return mesh;
     }
 
+    public static Mesh createPlane(int subdivisions, float size)
+    {
+        return createPlane(subdivisions, size, Orientation.yAxis);
+    }
 }

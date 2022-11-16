@@ -29,6 +29,7 @@ void main()
 #type FRAGMENT
 #version 330 core
 
+const float NO_LIGHT = 0.0;
 const float DIRECTIONAL_LIGHT = 1.0;
 const float POINT_LIGHT = 2.0;
 const float SPOT_LIGHT = 3.0;
@@ -76,7 +77,6 @@ struct Light
 
 uniform Light lights[MAX_LIGHTS];
 uniform Material material;
-
 uniform vec3 viewPosition;
 
 vec3 directionalLight(Light light, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor)
@@ -137,10 +137,10 @@ void main()
     vec4 specularColor = vec4(0.0);
 
     diffuseColor = (material.hasDiffuseMap == 1.0) ?
-    texture(material.diffuseMap, vertexTexture) : vec4(material.diffuse, 1.0);
+        texture(material.diffuseMap, vertexTexture) : vec4(material.diffuse, 1.0);
 
     specularColor =  (material.hasSpecularMap == 1.0) ?
-    texture(material.specularMap, vertexTexture) : vec4(material.specular, 1.0);
+        texture(material.specularMap, vertexTexture) : vec4(material.specular, 1.0);
 
     vec3 normal = normalize(vertexNormal);
     vec3 viewDirection = normalize(viewPosition - fragmentPosition);
@@ -150,7 +150,9 @@ void main()
     for(int i = 0; i < MAX_LIGHTS; i++)
     {
         Light light = lights[i];
-        if(light.type == DIRECTIONAL_LIGHT) // If the light is a directional light
+        if(light.type == NO_LIGHT) // If the light is empty
+            continue;
+        else if(light.type == DIRECTIONAL_LIGHT) // If the light is a directional light
             result += directionalLight(light, normal, viewDirection, diffuseColor.xyz, specularColor.xyz);
         else if(light.type == POINT_LIGHT) // If the light is a point light
             result += pointLight(light, normal, fragmentPosition, viewDirection, diffuseColor.xyz, specularColor.xyz);
