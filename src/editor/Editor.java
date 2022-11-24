@@ -1,12 +1,14 @@
 package editor;
 
 import dream.environment.Environment;
+import dream.model.MeshFactory;
+import dream.model.VertexData;
 import dream.node.Node;
 import dream.scene.Scene;
 import dream.util.collection.Join;
 import editor.gui.DearImGui;
 import editor.overrides.WindowOverrides;
-import editor.windows.ContentWindow;
+import editor.windows.interfaces.ContentWindow;
 import editor.windows.Viewport;
 import editor.windows.EditorWindow;
 import editor.windows.interfaces.DoubleObservableWindow;
@@ -77,7 +79,7 @@ public class Editor
         // Environment
         List<EditorWindow> environmentWindows = new ArrayList<>();
         Viewport<Environment> environmentViewport = WindowOverrides.environmentViewport();
-        EditorWindow environmentSettings = new EditorWindow("Settings");
+        ObservableWindow<Environment> environmentSettings = WindowOverrides.environmentSettings();
         Collections.addAll(environmentWindows, environmentSettings, environmentViewport);
         this.editorWindows.put(2, environmentWindows);
 
@@ -89,7 +91,12 @@ public class Editor
         this.editorWindows.put(3, materialWindows);
 
         Scene scene = Game.game().mainScene();
-        environmentViewport.set(Game.game().getEnvironment());
+
+        WindowOverrides.addNodes.observable(scene);
+
+        Environment environment = Game.game().getEnvironment();
+        environmentViewport.set(environment);
+        environmentSettings.set(environment);
 
         viewport.set(scene);
         contents.addContent(scene);
@@ -99,8 +106,7 @@ public class Editor
         nodeGraph.second(join);
         inspector.set(join);
 
-//        inspector.setLight(sceneGraph.getLight());
-        //viewport.getRenderer().setSelectedNode(sceneGraph.getNode());
+        viewport.renderer().setSelectedNode(nodeGraph.second());
     }
 
     public void refresh()
@@ -110,6 +116,8 @@ public class Editor
         List<EditorWindow> windows = this.editorWindows.get(this.currentMenuIndex);
         if(windows != null)
             windows.forEach(EditorWindow::show);
+
+        WindowOverrides.showMiscellaneous();
 
         //ImGui.showStyleEditor();
         //ImGui.showDemoWindow();

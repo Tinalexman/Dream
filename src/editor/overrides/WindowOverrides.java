@@ -2,10 +2,10 @@ package editor.overrides;
 
 import dream.camera.Camera;
 import dream.components.Component;
-import dream.components.material.Material;
-import dream.components.mesh.Mesh;
-import dream.components.mesh.MeshRenderer;
-import dream.components.transform.Transform;
+import dream.components.Material;
+import dream.environment.SkyBox;
+import dream.components.MeshRenderer;
+import dream.components.Transform;
 import dream.environment.Environment;
 import dream.graphics.icon.Icons;
 import dream.graphics.texture.Texture;
@@ -13,7 +13,10 @@ import dream.light.DirectionalLight;
 import dream.light.Light;
 import dream.light.PointLight;
 import dream.light.SpotLight;
+import dream.managers.NodeManager;
 import dream.managers.ResourcePool;
+import dream.model.Mesh;
+import dream.model.VertexData;
 import dream.node.Node;
 import dream.postprocessing.FilterManager;
 import dream.renderer.ForwardRenderer;
@@ -23,12 +26,10 @@ import dream.util.collection.Join;
 import dream.util.contain.Containable;
 import dream.util.contain.Contained;
 import dream.util.contain.Container;
+import dream.util.opengl.OpenGlUtils;
 import editor.util.Controls;
-import editor.windows.ContentWindow;
+import editor.windows.interfaces.*;
 import editor.windows.Viewport;
-import editor.windows.interfaces.DoubleObservableWindow;
-import editor.windows.interfaces.Modal;
-import editor.windows.interfaces.ObservableWindow;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.flag.*;
@@ -41,6 +42,181 @@ import java.util.List;
 
 public class WindowOverrides
 {
+
+    /*
+        MISCELLANEOUS WINDOWS
+     */
+
+    private static boolean showAddNodes = false;
+
+    public static void showMiscellaneous()
+    {
+        if(WindowOverrides.showAddNodes)
+            WindowOverrides.addNodes.show();
+    }
+
+    public static DoubleModal<Scene,Node> addNodes = new DoubleModal<>("Add Nodes",
+            "Add a new node to your scene")
+    {
+        private Container<String> root = new Container<>(NodeManager.tree());
+        private String selectedNodeDescription = null;
+        private String selectedNode = null;
+        private final ImString filteredText = new ImString();
+        private final int defaultTreeFlags = ImGuiTreeNodeFlags.OpenOnArrow
+                | ImGuiTreeNodeFlags.OpenOnDoubleClick
+                | ImGuiTreeNodeFlags.DefaultOpen;
+
+        private void filterNodes()
+        {
+            this.root.clear();
+            this.root = searchNode(NodeManager.tree(), this.filteredText.get());
+        }
+
+        private Container<String> searchNode(Container<String> root, String filter)
+        {
+            Container<String> result = new Container<>(root.name(), root.value());
+            for(Containable<String> containable : root.getItems())
+            {
+                if(containable instanceof Container<String> container)
+                {
+                    Container<String> filtered = searchNode(container, filter);
+                    if(filtered.size() > 0)
+                        result.add(filtered);
+                }
+                else if(containable instanceof Contained<String> contained)
+                {
+                    if(contained.name().contains(filter))
+                        result.add(contained);
+                }
+            }
+            return result;
+        }
+
+        private void showRootNode()
+        {
+            if(this.root.size() == 0)
+            {
+                String description = "Invalid Search Parameters";
+                ImVec2 size = ImGui.getContentRegionAvail();
+                ImVec2 textSize = new ImVec2();
+                ImGui.calcTextSize(textSize, description);
+                ImGui.setCursorPos((size.x - textSize.x) * 0.5f, size.y * 0.5f);
+                ImGui.text(description);
+                this.selectedNode = null;
+                return;
+            }
+
+            int flags = this.defaultTreeFlags;
+            boolean isSelected = this.root.name().equals(this.selectedNode);
+            if (isSelected)
+                flags |= ImGuiTreeNodeFlags.Selected;
+
+            boolean hasChildren = this.root.hasChildren();
+            if(!hasChildren)
+                flags |= ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Bullet;
+
+            boolean nodeOpen = ImGui.treeNodeEx(root.hashCode(), flags, root.name());
+            if (ImGui.isItemClicked() && !ImGui.isItemToggledOpen())
+            {
+                this.selectedNode = root.name();
+                this.selectedNodeDescription = root.value();
+            }
+
+            if(hasChildren && nodeOpen)
+            {
+                showFilteredNodes(root.getItems());
+                ImGui.treePop();
+            }
+        }
+
+        private void showFilteredNodes(List<Containable<String>> nodes)
+        {
+            for (int i = 0; i < nodes.size(); i++)
+            {
+                int flags = defaultTreeFlags;
+                Containable<String> currentNode = nodes.get(i);
+                boolean isSelected = currentNode.name().equals(this.selectedNode);
+                if (isSelected)
+                    flags |= ImGuiTreeNodeFlags.Selected;
+
+                Container<String> container = null;
+                boolean isContainer = currentNode.isContainer();
+                boolean hasChildren = isContainer && (container = (Container<String>) currentNode).getItems().size() > 0;
+
+                if(!hasChildren)
+                    flags |= ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Bullet;
+
+                boolean nodeOpen = ImGui.treeNodeEx(i, flags, currentNode.name());
+                if (ImGui.isItemClicked() && !ImGui.isItemToggledOpen())
+                {
+                    this.selectedNode = currentNode.name();
+                    this.selectedNodeDescription = currentNode.value();
+                }
+
+                if(hasChildren && nodeOpen)
+                {
+                    showFilteredNodes(container.getItems());
+                    ImGui.treePop();
+                }
+            }
+        }
+
+        @Override
+        public void drawTopSheet()
+        {
+            ImVec2 size = ImGui.getContentRegionAvail();
+            ImGui.pushItemWidth(size.x);
+            ImGui.inputTextWithHint("##label", "Search For Node", this.filteredText);
+            ImGui.spacing();
+            ImGui.popItemWidth();
+        }
+
+        @Override
+        public float getBottomHeight()
+        {
+            return 100.0f;
+        }
+
+        @Override
+        public void drawContent()
+        {
+            ImGui.pushItemWidth(this.childSize.x - 10.0f);
+            filterNodes();
+            showRootNode();
+            this.selection = NodeManager.createNode(this.selectedNode);
+            ImGui.popItemWidth();
+        }
+
+        @Override
+        public void drawBottomSheet()
+        {
+            ImGui.text("DESCRIPTION");
+            ImGui.spacing();
+
+            if(this.selectedNodeDescription != null)
+                ImGui.text(this.selectedNodeDescription);
+
+            ImGui.spacing();
+
+            if (ImGui.button("Cancel", 120.0f, 0.0f))
+            {
+                WindowOverrides.showAddNodes = false;
+                ImGui.closeCurrentPopup();
+            }
+            ImGui.sameLine();
+
+            if (ImGui.button("Add Node", 120.0f, 0.0f))
+            {
+                WindowOverrides.showAddNodes = false;
+                this.selection = NodeManager.createNode(this.selectedNode);
+                this.observable.add(this.selection);
+                ImGui.closeCurrentPopup();
+            }
+            ImGui.setItemDefaultFocus();
+        }
+    };
+
+
     /*
         SCENE WINDOWS
      */
@@ -62,6 +238,14 @@ public class WindowOverrides
                 this.rendererIDSelection = new ImInt(0);
                 this.rendererFilterSelection = new ImInt(0);
                 this.title = "Scene Viewport";
+
+                OpenGlUtils.enableStencil();
+            }
+
+            @Override
+            public Renderer renderer()
+            {
+                return this.renderer;
             }
 
             @Override
@@ -201,8 +385,6 @@ public class WindowOverrides
 
             private void light(Light light)
             {
-                light.active = Controls.drawBooleanControl(light.active, "Visibility");
-
                 if(light instanceof DirectionalLight directionalLight)
                 {
                     ImGui.text("Direction:");
@@ -262,18 +444,21 @@ public class WindowOverrides
             private void meshRenderer(MeshRenderer renderer)
             {
                 Mesh mesh = renderer.getMesh();
-                int[] meshProperties = mesh.properties();
+                VertexData data = mesh.vertexData();
                 float indent = 10.0f;
 
                 ImGui.text("Vertices: ");
                 ImGui.indent(indent);
 
-                ImGui.text("Position: " + meshProperties[0] + " ( " +
-                        (Float.BYTES * meshProperties[0]) + " bytes )");
-                ImGui.text("UV: " + meshProperties[1] + " ( " +
-                        (Float.BYTES * meshProperties[1]) + " bytes )");
-                ImGui.text("Normals: " + meshProperties[2] + " ( " +
-                        (Float.BYTES * meshProperties[2]) + " bytes )");
+                int length = data.position().length;
+                ImGui.text("Position: " + length + " ( " +
+                        (Float.BYTES * length) + " bytes )");
+                length = data.uv().length;
+                ImGui.text("UV: " + length + " ( " +
+                        (Float.BYTES * length) + " bytes )");
+                length = data.normal().length;
+                ImGui.text("Normals: " + length + " ( " +
+                        (Float.BYTES * length) + " bytes )");
 
                 ImGui.unindent(indent);
 
@@ -402,14 +587,17 @@ public class WindowOverrides
                 if((selected = this.value.value) == null)
                     return;
 
-                boolean visibility = Controls.drawBooleanControl(selected.isVisible(), "Visibility");
-                selected.isVisible(visibility);
+                ImGui.indent(5.0f);
+                boolean visibility = Controls.drawBooleanControl(selected.visible(), "Visibility");
+                selected.visible(visibility);
+                ImGui.unindent(5.0f);
 
                 ImGui.pushStyleColor(ImGuiCol.Header, 0, 0, 0, 0);
                 ImGui.pushStyleColor(ImGuiCol.HeaderHovered, 0, 0, 0, 0);
                 ImGui.pushStyleColor(ImGuiCol.HeaderActive, 0, 0, 0, 0);
                 for (Component c : selected.getComponents())
                 {
+                    ImGui.indent(5.0f);
                     if (ImGui.collapsingHeader(c.getClass().getSimpleName(), ImGuiTreeNodeFlags.DefaultOpen))
                     {
                         if (c.getClass().isAssignableFrom(Transform.class))
@@ -419,14 +607,13 @@ public class WindowOverrides
                         else if (c.getClass().isAssignableFrom(MeshRenderer.class))
                             meshRenderer((MeshRenderer) c);
                     }
+                    ImGui.unindent(5.0f);
                 }
+
+                if(selected instanceof Light light)
+                    light(light);
                 ImGui.popStyleColor(3);
 
-//                Light light;
-//                if((light = this.light.value) == null)
-//                    return;
-//
-//                light(light);
             }
         };
     }
@@ -456,7 +643,10 @@ public class WindowOverrides
                     if(ImGui.menuItem("Add Child"))
                     {
                         if(this.second.value != null)
-                            this.first.add(new Node());
+                        {
+                            WindowOverrides.showAddNodes = true;
+                            //this.first.add(new Node());
+                        }
                     }
 
                     ImGui.separator();
@@ -581,7 +771,7 @@ public class WindowOverrides
      */
     public static Viewport<Environment> environmentViewport()
     {
-        return new Viewport<Environment>()
+        return new Viewport<>()
         {
             private Renderer renderer;
 
@@ -623,167 +813,33 @@ public class WindowOverrides
         };
     }
 
-
-    /*
-        MISCELLANEOUS WINDOWS
-     */
-    public static Modal<Node> addNodes = new Modal<>("Add Nodes",
-            "Add a new node to your scene")
+    public static ObservableWindow<Environment> environmentSettings()
     {
-        private Container<String> root = new Container<>(Node.getNodeTree());
-        private String selectedNodeDescription = null;
-        private String selectedNode = null;
-        private final ImString filteredText = new ImString();
-        private final int defaultTreeFlags = ImGuiTreeNodeFlags.OpenOnArrow
-                | ImGuiTreeNodeFlags.OpenOnDoubleClick
-                | ImGuiTreeNodeFlags.DefaultOpen;
-
-        private void filterNodes()
+        return new ObservableWindow<>("Environment Settings")
         {
-            this.root.clear();
-            this.root = searchNode(Node.getNodeTree(), this.filteredText.get());
-        }
-
-        private Container<String> searchNode(Container<String> root, String filter)
-        {
-            Container<String> result = new Container<>(root.name(), root.value());
-            for(Containable<String> containable : root.getItems())
+            @Override
+            protected void contents()
             {
-                if(containable instanceof Container<String> container)
+                if(ImGui.collapsingHeader("SkyBox"))
                 {
-                    Container<String> filtered = searchNode(container, filter);
-                    if(filtered.size() > 0)
-                        result.add(filtered);
-                }
-                else if(containable instanceof Contained<String> contained)
-                {
-                    if(contained.name().contains(filter))
-                        result.add(contained);
+                    SkyBox skyBox = this.value.getSkyBox();
+                    skyBox.active(Controls.drawBooleanControl(skyBox.active(), "Active"));
+
+                    String[] images = skyBox.getPaths();
+                    String[] descriptions = { "Right", "Left", "Top", "Bottom", "Front", "Back" };
+                    for(int i = 0; i < images.length; ++i)
+                    {
+                        ImGui.text(descriptions[i] + ":");
+                        ImGui.sameLine();
+                        String filename = images[i].substring(images[i].lastIndexOf("\\") + 1);
+                        ImGui.inputText("##text" + i, new ImString(filename));
+                    }
+
+                    if(ImGui.button("Load"))
+                        skyBox.load();
                 }
             }
-            return result;
-        }
+        };
+    }
 
-        private void showRootNode()
-        {
-            if(this.root.size() == 0)
-            {
-                String description = "Invalid Search Parameters";
-                ImVec2 size = ImGui.getContentRegionAvail();
-                ImVec2 textSize = new ImVec2();
-                ImGui.calcTextSize(textSize, description);
-                ImGui.setCursorPos((size.x - textSize.x) * 0.5f, size.y * 0.5f);
-                ImGui.text(description);
-                this.selectedNode = null;
-                return;
-            }
-
-            int flags = this.defaultTreeFlags;
-            boolean isSelected = this.root.name().equals(this.selectedNode);
-            if (isSelected)
-                flags |= ImGuiTreeNodeFlags.Selected;
-
-            boolean hasChildren = this.root.hasChildren();
-            if(!hasChildren)
-                flags |= ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Bullet;
-
-            boolean nodeOpen = ImGui.treeNodeEx(root.hashCode(), flags, root.name());
-            if (ImGui.isItemClicked() && !ImGui.isItemToggledOpen())
-            {
-                this.selectedNode = root.name();
-                this.selectedNodeDescription = root.value();
-            }
-
-            if(hasChildren && nodeOpen)
-            {
-                showFilteredNodes(root.getItems());
-                ImGui.treePop();
-            }
-        }
-
-        private void showFilteredNodes(List<Containable<String>> nodes)
-        {
-            for (int i = 0; i < nodes.size(); i++)
-            {
-                int flags = defaultTreeFlags;
-                Containable<String> currentNode = nodes.get(i);
-                boolean isSelected = currentNode.name().equals(this.selectedNode);
-                if (isSelected)
-                    flags |= ImGuiTreeNodeFlags.Selected;
-
-                Container<String> container = null;
-                boolean isContainer = currentNode.isContainer();
-                boolean hasChildren = isContainer && (container = (Container<String>) currentNode).getItems().size() > 0;
-
-                if(!hasChildren)
-                    flags |= ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Bullet;
-
-                boolean nodeOpen = ImGui.treeNodeEx(i, flags, currentNode.name());
-                if (ImGui.isItemClicked() && !ImGui.isItemToggledOpen())
-                {
-                    this.selectedNode = currentNode.name();
-                    this.selectedNodeDescription = currentNode.value();
-                }
-
-                if(hasChildren && nodeOpen)
-                {
-                    showFilteredNodes(container.getItems());
-                    ImGui.treePop();
-                }
-            }
-        }
-
-        @Override
-        public void drawTopSheet()
-        {
-            ImVec2 size = ImGui.getContentRegionAvail();
-            ImGui.pushItemWidth(size.x);
-            ImGui.inputTextWithHint("##label", "Search For Node", this.filteredText);
-            ImGui.spacing();
-            ImGui.popItemWidth();
-        }
-
-        @Override
-        public float getBottomHeight()
-        {
-            return 100.0f;
-        }
-
-        @Override
-        public void drawContent()
-        {
-            ImGui.pushItemWidth(this.childSize.x - 10.0f);
-            filterNodes();
-            showRootNode();
-            this.selection = NodeManager.createNode(this.selectedNode);
-            ImGui.popItemWidth();
-        }
-
-        @Override
-        public void drawBottomSheet()
-        {
-            ImGui.text("DESCRIPTION");
-            ImGui.spacing();
-
-            if(this.selectedNodeDescription != null)
-                ImGui.text(this.selectedNodeDescription);
-
-            ImGui.spacing();
-
-            if (ImGui.button("Cancel", 120.0f, 0.0f))
-            {
-                deactivate();
-                ImGui.closeCurrentPopup();
-            }
-            ImGui.sameLine();
-
-            if (ImGui.button("Add Node", 120.0f, 0.0f))
-            {
-                deactivate();
-                // Add the node
-                ImGui.closeCurrentPopup();
-            }
-            ImGui.setItemDefaultFocus();
-        }
-    };
 }

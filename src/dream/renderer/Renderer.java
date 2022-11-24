@@ -1,8 +1,9 @@
 package dream.renderer;
 
 import dream.camera.Camera;
-import dream.components.mesh.MeshFactory;
-import dream.components.mesh.MeshRenderer;
+import dream.components.Transform;
+import dream.model.MeshFactory;
+import dream.components.MeshRenderer;
 import dream.io.FrameBuffer;
 import dream.io.PickingTexture;
 import dream.managers.ResourcePool;
@@ -34,16 +35,17 @@ public class Renderer implements Handler
     }
 
     protected FrameBuffer colorBuffer, postProcessBuffer;
-    protected Shader pickingShader;
+    protected Shader pickingShader, outlineShader;
     protected PickingTexture pickingTexture;
     protected MeshRenderer postProcessRenderer;
 
-    protected final Vector4f clearColor;
+    protected final Vector4f clearColor, outlineColor;
     protected final Camera camera;
     protected boolean useCamera;
     protected Join<Node> selectedNode;
 
     protected int currentFilterIndex;
+    protected float outlineSize;
     protected boolean postProcess;
 
     public Renderer()
@@ -53,15 +55,21 @@ public class Renderer implements Handler
         this.postProcessBuffer = new FrameBuffer(windowSize[0], windowSize[1]);
         this.pickingTexture = new PickingTexture(windowSize[0], windowSize[1]);
         this.postProcessRenderer = new MeshRenderer();
-        this.postProcessRenderer.setMesh(MeshFactory.createPlane(1, 1.0f, MeshFactory.Orientation.zAxis));
+        this.postProcessRenderer.setMesh(MeshFactory.plane(1, 1.0f, MeshFactory.Orientation.zAxis));
 
         this.camera = new Camera();
 
-        this.clearColor = new Vector4f(0.4f, 0.8f, 0.9f, 1.0f);
-        this.pickingShader = ResourcePool.addAndGetShader("pickingShader.glsl");
-        this.pickingShader.onStart();
+        this.clearColor = new Vector4f(0.2f, 0.2f, 0.2f, 1.0f);
+        this.outlineColor = new Vector4f(0.7f, 0.7f, 0.3f, 1.0f);
+        this.pickingShader = ResourcePool.addAndGetShader("picking");
         this.pickingShader.storeUniforms(transformation, projection,
                 view, objectIndex, drawIndex);
+
+        this.outlineShader = ResourcePool.addAndGetShader("color");
+        this.outlineShader.storeUniforms(transformation, projection,
+                view, color);
+
+        this.outlineSize = 1.1f;
 
         this.useCamera = true;
     }
@@ -167,19 +175,21 @@ public class Renderer implements Handler
             return;
 
         this.postProcessBuffer.start();
+
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        this.postProcessRenderer.onStart();
         filterShader.start();
 
         glDisable(GL_DEPTH_TEST);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, this.colorBuffer.getID());
-        glDrawElements(GL_TRIANGLES, this.postProcessRenderer.count(), GL_UNSIGNED_INT, 0);
 
-        this.postProcessRenderer.onStop();
+        this.postProcessRenderer.render();
+
         filterShader.stop();
+
+        glEnable(GL_DEPTH_TEST);
 
         this.postProcessBuffer.stop();
     }
@@ -188,7 +198,7 @@ public class Renderer implements Handler
     {
         this.colorBuffer.start();
         glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
     public void stop()
@@ -198,6 +208,11 @@ public class Renderer implements Handler
         postProcess(FilterManager.getShader(this.currentFilterIndex));
     }
 
+
+    protected void outline(Transform transform, MeshRenderer renderer)
+    {
+
+    }
 }
 
 

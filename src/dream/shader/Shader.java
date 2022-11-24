@@ -1,5 +1,6 @@
 package dream.shader;
 
+import dream.Engine;
 import org.joml.*;
 import org.lwjgl.system.MemoryStack;
 
@@ -10,20 +11,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL33.*;
 
 public class Shader
 {
     protected static final int notFound = -1;
-
+    protected static final String shaderPath = Engine.resourcePath + "\\shaders\\";
     protected transient int programID;
 
-    public final String filepath;
     protected transient Map<String, Integer> uniformVariables;
 
     public Shader(String shaderFileName)
     {
-        this.filepath = shaderFileName;
+        onStart(shaderFileName);
     }
 
     public void destroy()
@@ -33,9 +33,9 @@ public class Shader
             glDeleteProgram(this.programID);
     }
 
-    public void onStart()
+    public void onStart(String filename)
     {
-        String[] shaders = processShader(this.filepath);
+        String[] shaders = processShader(filename);
         this.programID = glCreateProgram();
         if(programID == 0)
             throw new RuntimeException("Cannot create shader program!");
@@ -52,6 +52,8 @@ public class Shader
         int shaderID = glCreateShader(shaderType);
         if(shaderID == 0)
             throw new IllegalStateException("Cannot create shader!");
+        if(shaderSource.isBlank())
+            return -1;
 
         glShaderSource(shaderID, shaderSource);
         glCompileShader(shaderID);
@@ -63,39 +65,20 @@ public class Shader
         return shaderID;
     }
 
-    private String[] processShader(String shaderFilePath)
+    private String[] processShader(String shaderFileName)
     {
         String[] shaders = new String[2];
         try
         {
-            String source = new String(Files.readAllBytes(Paths.get(shaderFilePath)));
-            String[] splitShaders = source.split("(#type)( )+([a-zA-Z]+)");
+            String vertexPath = shaderPath + "vertex\\" + shaderFileName + ".glsl";
+            String fragmentPath = shaderPath + "fragment\\" + shaderFileName + ".glsl";
 
-            int index = source.indexOf("#type") + 6;
-            int eol = source.indexOf("\r\n", index);
-            String firstPattern = source.substring(index, eol).trim();
-
-            index = source.indexOf("#type", eol) + 6;
-            eol = source.indexOf("\r\n", index);
-            String secondPattern = source.substring(index, eol).trim();
-
-            if(firstPattern.equalsIgnoreCase("vertex"))
-                shaders[0] = splitShaders[1];
-            else if(firstPattern.equalsIgnoreCase("fragment"))
-                shaders[1] = splitShaders[1];
-            else
-                throw new RuntimeException("Illegal Shader Type: '" + firstPattern + "'");
-
-            if(secondPattern.equalsIgnoreCase("vertex"))
-                shaders[0] = splitShaders[2];
-            else if(secondPattern.equalsIgnoreCase("fragment"))
-                shaders[1] = splitShaders[2];
-            else
-                throw new RuntimeException("Illegal Shader Type: '" + secondPattern + "'");
+            shaders[0] = new String(Files.readAllBytes(Paths.get(vertexPath)));
+            shaders[1] = new String(Files.readAllBytes(Paths.get(fragmentPath)));
         }
         catch (IOException ex)
         {
-            throw new RuntimeException("Cannot load shader: '" + shaderFilePath + "' due to " + ex.getMessage());
+            throw new RuntimeException("Cannot load shader: '" + shaderFileName + "' due to " + ex.getMessage());
         }
         return shaders;
     }
@@ -132,13 +115,13 @@ public class Shader
     {
         if(!(obj instanceof Shader shader))
             return false;
-        return this.filepath.equals(shader.filepath);
+        return this.programID == shader.programID;
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(super.hashCode(), this.filepath);
+        return Objects.hash(super.hashCode(), this.programID);
     }
 
     private int uniformLocation(String name)
@@ -161,58 +144,58 @@ public class Shader
         }
     }
 
-    public void loadUniform(String name, int value)
+    public void uniform(String name, int value)
     {
         int location = this.uniformVariables.get(name);
         glUniform1i(location, value);
     }
 
-    public void loadUniform(String name, float value)
+    public void uniform(String name, float value)
     {
         int location = this.uniformVariables.get(name);
         glUniform1f(location, value);
     }
 
-    public void loadUniform(String name, boolean value)
+    public void uniform(String name, boolean value)
     {
         int location = this.uniformVariables.get(name);
         glUniform1f(location, value ? 1.0f : 0.0f);
     }
 
-    public void loadUniform(String name, Vector2f value)
+    public void uniform(String name, Vector2f value)
     {
-        loadUniform(name, value.x, value.y);
+        uniform(name, value.x, value.y);
     }
 
-    public void loadUniform(String name, float x, float y)
+    public void uniform(String name, float x, float y)
     {
         int location = this.uniformVariables.get(name);
         glUniform2f(location,x, y);
     }
 
-    public void loadUniform(String name, Vector3f value)
+    public void uniform(String name, Vector3f value)
     {
-        loadUniform(name, value.x, value.y, value.z);
+        uniform(name, value.x, value.y, value.z);
     }
 
-    public void loadUniform(String name, float x, float y, float z)
+    public void uniform(String name, float x, float y, float z)
     {
         int location = this.uniformVariables.get(name);
         glUniform3f(location, x, y, z);
     }
 
-    public void loadUniform(String name, Vector4f value)
+    public void uniform(String name, Vector4f value)
     {
-        loadUniform(name, value.x, value.y, value.z, value.w);
+        uniform(name, value.x, value.y, value.z, value.w);
     }
 
-    public void loadUniform(String name, float x, float y, float z, float w)
+    public void uniform(String name, float x, float y, float z, float w)
     {
         int location = this.uniformVariables.get(name);
         glUniform4f(location, x, y, z, w);
     }
 
-    public void loadUniform(String name, Matrix3f value)
+    public void uniform(String name, Matrix3f value)
     {
         int location = this.uniformVariables.get(name);
         try(MemoryStack stack = MemoryStack.stackPush())
@@ -221,7 +204,7 @@ public class Shader
         }
     }
 
-    public void loadUniform(String name, Matrix4f value)
+    public void uniform(String name, Matrix4f value)
     {
         int location = this.uniformVariables.get(name);
         try(MemoryStack stack = MemoryStack.stackPush())

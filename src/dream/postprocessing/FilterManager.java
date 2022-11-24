@@ -16,25 +16,29 @@ public class FilterManager
     {
         try
         {
-            Shader shader = ResourcePool.addAndGetShader("filters\\inversionShader.glsl");
+            Shader shader = ResourcePool.addAndGetShader("filters\\inversion");
             shader.storeUniforms(sampler);
             FilterManager.filters.put("Inversion", shader);
 
-            shader = ResourcePool.addAndGetShader("filters\\grayscaleShader.glsl");
+            shader = ResourcePool.addAndGetShader("filters\\grayscale");
             shader.storeUniforms(sampler);
             FilterManager.filters.put("GrayScale", shader);
 
-            shader = ResourcePool.addAndGetShader("filters\\sharpenShader.glsl");
+            shader = ResourcePool.addAndGetShader("filters\\sharpen");
             shader.storeUniforms(sampler);
             FilterManager.filters.put("Sharpen", shader);
 
-            shader = ResourcePool.addAndGetShader("filters\\blurShader.glsl");
+            shader = ResourcePool.addAndGetShader("filters\\blur");
             shader.storeUniforms(sampler);
             FilterManager.filters.put("Blur", shader);
 
-            shader = ResourcePool.addAndGetShader("filters\\edgeShader.glsl");
+            shader = ResourcePool.addAndGetShader("filters\\edge");
             shader.storeUniforms(sampler);
             FilterManager.filters.put("Edge Detection", shader);
+
+            shader = ResourcePool.addAndGetShader("filters\\gamma");
+            shader.storeUniforms(sampler);
+            FilterManager.filters.put("Gamma", shader);
         }
         catch (Exception ex)
         {

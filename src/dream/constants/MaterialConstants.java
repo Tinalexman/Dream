@@ -1,6 +1,6 @@
 package dream.constants;
 
-import dream.components.material.Material;
+import dream.components.Material;
 import org.joml.Vector3f;
 
 public class MaterialConstants
@@ -18,6 +18,6 @@ public class MaterialConstants
             new Vector3f(0.50754f, 0.50754f, 0.50754f), new Vector3f(0.508273f, 0.508273f, 0.508273f), 51.2f);
 
     public static final Material defaultMaterial = new Material(new Vector3f(1.0f, 0.5f, 0.3f),
-            new Vector3f(1.0f, 0.5f, 0.3f), new Vector3f(0.5f, 0.5f, 0.5f), 32.0f);
+            new Vector3f(1.0f, 0.5f, 0.3f), new Vector3f(0.5f, 0.5f, 0.5f), 16.0f);
 
 }

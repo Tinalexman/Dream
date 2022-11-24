@@ -11,18 +11,22 @@ import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
 public class Texture
 {
+    public static final String diffuseTexture = "texture_diffuse";
+    public static final String specularTexture = "texture_specular";
+
     public transient int width;
     public transient int height;
     public transient int ID;
 
     public String filePath;
+    public String type;
 
     public Texture(String filePath)
     {
         this.width = 0;
         this.height = 0;
         this.filePath = filePath;
-
+        this.type = diffuseTexture;
         load();
     }
 

@@ -47,7 +47,7 @@ public class Camera
         this.pitch = 0.0f;
         this.yaw = -90.0f;
 
-        this.position = new Vector3f(0.0f, 0.0f, 5.0f);
+        this.position = new Vector3f(0.0f, 0.5f, 3.0f);
         this.right = new Vector3f(1.0f, 0.0f, 0.0f);
         this.forward = new Vector3f(0.0f, 0.0f, -1.0f);
         this.upVector = new Vector3f(0.0f, 1.0f, 0.0f);

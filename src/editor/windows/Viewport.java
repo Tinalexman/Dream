@@ -3,6 +3,7 @@ package editor.windows;
 import dream.graphics.icon.Icons;
 import dream.managers.ResourcePool;
 import dream.managers.WindowManager;
+import dream.renderer.Renderer;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.flag.*;
@@ -94,6 +95,11 @@ public class Viewport<T> extends EditorWindow
     protected void showMenu()
     {
 
+    }
+
+    public Renderer renderer()
+    {
+        return null;
     }
 
     private ImVec2 getCenteredPositionForViewPort(ImVec2 aspectSize)

@@ -1,12 +1,14 @@
 package dream;
 
 
+import dream.managers.NodeManager;
 import dream.postprocessing.FilterManager;
 import editor.events.EventManager;
 import dream.io.Input;
 import dream.managers.ResourcePool;
 import dream.managers.WindowManager;
 import editor.Editor;
+import editor.overrides.WindowOverrides;
 
 public class Engine
 {
@@ -44,6 +46,7 @@ public class Engine
 
         ResourcePool.loadIcons();
         FilterManager.createFilters();
+        NodeManager.loadTree();
 
         Engine.editor = new Editor();
         Engine.editor.initialize(mainWindowID);

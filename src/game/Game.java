@@ -1,20 +1,20 @@
 package game;
 
-import dream.components.material.Material;
-import dream.components.mesh.Mesh;
-import dream.components.mesh.MeshFactory;
-import dream.components.mesh.MeshRenderer;
-import dream.components.transform.Transform;
+import dream.Engine;
+import dream.components.Material;
+import dream.components.MeshRenderer;
+import dream.components.Transform;
 import dream.environment.Environment;
-import dream.managers.ResourcePool;
+import dream.light.PointLight;
+import dream.model.Mesh;
+import dream.model.MeshFactory;
+import dream.model.Model;
 import dream.node.drawable.DrawableNode;
 import dream.scene.Scene;
-import dream.shader.Shader;
+import dream.util.loader.ModelLoader;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static dream.shader.ShaderConstants.*;
 
 public class Game
 {
@@ -44,51 +44,43 @@ public class Game
         Scene scene = new Scene();
 
         DrawableNode cube = new DrawableNode();
-        cube.name("Container Cube");
-        Material cubeMaterial = new Material();
-        cubeMaterial.getPack().diffuse = ResourcePool.addAndGetTexture("crate diffuse.png");
-        cubeMaterial.getPack().specular = ResourcePool.addAndGetTexture("crate specular.png");
-        Mesh cubeMesh = MeshFactory.asCube();
+        cube.name("Cube");
+        Mesh cubeMesh = MeshFactory.cube(1.0f);
         MeshRenderer cubeRenderer = new MeshRenderer();
         cubeRenderer.setMesh(cubeMesh);
-        cube.addComponent(cubeMaterial);
-        cube.addComponent(new Transform());
+        cube.addComponent(new Material());
+        Transform t = new Transform();
+        t.scale.set(0.1f);
+        t.incrementRotation(0.0f, 30.0f, 0.0f);
+        cube.addComponent(t);
         cube.addComponent(cubeRenderer);
         scene.add(cube);
 
-        DrawableNode floor = new DrawableNode();
-        floor.name("Floor");
-        Material floorMat = new Material();
-        floorMat.getPack().diffuse = ResourcePool.addAndGetTexture("Normal Grass.png");
-        Mesh floorMesh = MeshFactory.createPlane(1, 5.0f);
-        MeshRenderer floorRenderer = new MeshRenderer();
-        floorRenderer.setMesh(floorMesh);
-        floor.addComponent(floorMat);
-        floor.addComponent(floorRenderer);
-        Transform floorT = new Transform();
-        floorT.position.set(0.0f, -0.51f, 0.0f);
-        floor.addComponent(floorT);
-        scene.add(floor);
-
         DrawableNode plane = new DrawableNode();
-        Shader shader = ResourcePool.addAndGetShader("blendShader.glsl");
-        shader.storeUniforms(projection, view, transformation);
-        shader.storeUniforms();
-        plane.setShader(shader);
-        plane.name("Window Plane");
-        Transform planeTransform = new Transform();
-        planeTransform.incrementRotation(90.0f, 0.0f, 0.0f);
-        planeTransform.incrementPosition(0.0f, 0.0f, 1.5f);
-        Material planeMaterial = new Material();
-        planeMaterial.transparency = true;
-        planeMaterial.getPack().diffuse = ResourcePool.addAndGetTexture("window.png");
-        Mesh mesh = MeshFactory.createPlane(1, 0.5f);
-        MeshRenderer renderer = new MeshRenderer();
-        renderer.setMesh(mesh);
-        plane.addComponent(planeMaterial);
-        plane.addComponent(planeTransform);
-        plane.addComponent(renderer);
+        plane.name("Plane");
+        Mesh planeMesh = MeshFactory.plane(1, 1.0f);
+        MeshRenderer planeRenderer = new MeshRenderer();
+        planeRenderer.setMesh(planeMesh);
+        plane.addComponent(new Material());
+        t = new Transform();
+        t.position.set(0.0f, -0.5f, 0.0f);
+        plane.addComponent(t);
+        plane.addComponent(planeRenderer);
         scene.add(plane);
+
+        PointLight light = new PointLight();
+        light.position.set(0.0f, 1.0f, 1.0f);
+        scene.add(light);
+
+        Model model = ModelLoader.load(Engine.resourcePath + "\\models\\barrel.obj");
+        if(model != null)
+        {
+            model.addComponent(new Transform());
+            model.addComponent(new Material());
+            model.addComponent(new MeshRenderer());
+            scene.add(model);
+        }
+
 
         this.scenes.put(Constants.mainScene, scene);
     }

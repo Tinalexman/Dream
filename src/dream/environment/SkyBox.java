@@ -1,8 +1,8 @@
 package dream.environment;
 
-import dream.components.mesh.Mesh;
-import dream.components.mesh.MeshFactory;
-import dream.components.mesh.MeshRenderer;
+import dream.model.Mesh;
+import dream.model.MeshFactory;
+import dream.components.MeshRenderer;
 import dream.managers.ResourcePool;
 import dream.shader.Shader;
 import dream.shader.ShaderConstants;
@@ -22,15 +22,19 @@ public class SkyBox
     private final MeshRenderer renderer;
     private String[] imagePaths;
     private int textureID;
+    private boolean active;
+    private boolean load;
 
 
     public SkyBox()
     {
-        this.shader = ResourcePool.addAndGetShader("skyboxShader.glsl");
+        this.shader = ResourcePool.addAndGetShader("skybox");
         this.shader.storeUniforms(ShaderConstants.projection, ShaderConstants.view);
-        Mesh mesh = MeshFactory.asCube();
+        Mesh mesh = MeshFactory.cube(1.0f);
         this.renderer = new MeshRenderer();
         this.renderer.setMesh(mesh);
+        this.load = false;
+        this.active = true;
     }
 
     public void setImagePaths(String ... paths)
@@ -40,8 +44,26 @@ public class SkyBox
             load();
     }
 
-    private void load()
+    public String[] getPaths()
     {
+        return this.imagePaths;
+    }
+
+    public boolean active()
+    {
+        return this.active;
+    }
+
+    public void active(boolean active)
+    {
+        this.active = active;
+    }
+
+    public void load()
+    {
+        if(this.load)
+            return;
+
         this.textureID = glGenTextures();
         glBindTexture(GL_TEXTURE_CUBE_MAP, this.textureID);
 
@@ -53,7 +75,7 @@ public class SkyBox
                 IntBuffer h = stack.mallocInt(1);
                 IntBuffer channels = stack.mallocInt(1);
 
-                STBImage.stbi_set_flip_vertically_on_load(true);
+                STBImage.stbi_set_flip_vertically_on_load(false);
                 ByteBuffer buffer = STBImage.stbi_load(this.imagePaths[i], w, h, channels, 4);
                 if(buffer == null)
                 {
@@ -78,6 +100,8 @@ public class SkyBox
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+        this.load = true;
     }
 
     public void start()
@@ -97,15 +121,16 @@ public class SkyBox
 
     public void loadUniforms(Matrix4f projection, Matrix4f view)
     {
-        this.shader.loadUniform(ShaderConstants.projection, projection);
-        this.shader.loadUniform(ShaderConstants.view, view);
+        this.shader.uniform(ShaderConstants.projection, projection);
+        this.shader.uniform(ShaderConstants.view, view);
     }
 
     public void show()
     {
-        this.renderer.onStart();
+        if(!this.active)
+            return;
+
         glBindTexture(GL_TEXTURE_CUBE_MAP, this.textureID);
-        glDrawArrays(GL_TRIANGLES, 0, this.renderer.count());
-        this.renderer.onStop();
+        this.renderer.render();
     }
 }

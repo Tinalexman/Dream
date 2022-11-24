@@ -58,12 +58,12 @@ public class Node
         this.changed = changed;
     }
 
-    public boolean isVisible()
+    public boolean visible()
     {
         return this.visible;
     }
 
-    public void isVisible(boolean visible)
+    public void visible(boolean visible)
     {
         this.visible = visible;
     }

@@ -15,11 +15,9 @@ public class Environment
     {
         this.skyBox = new SkyBox();
         String path = Engine.resourcePath + "\\skybox\\";
-        // RIGHT LEFT TOP BOTTOM FRONT BACK
         this.skyBox.setImagePaths(path + "right.jpg", path + "left.jpg", path + "top.jpg",
                 path + "bottom.jpg", path + "front.jpg", path + "back.jpg");
     }
-
 
     public void show(Camera camera)
     {
@@ -35,5 +33,11 @@ public class Environment
         glDepthMask(true);
         glDepthFunc(GL_LESS);
     }
+
+    public SkyBox getSkyBox()
+    {
+        return this.skyBox;
+    }
+
 
 }

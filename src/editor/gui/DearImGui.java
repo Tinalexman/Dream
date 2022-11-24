@@ -172,6 +172,7 @@ public class DearImGui
         currentStyle.setColor(ImGuiCol.HeaderHovered, 0.25f, 0.25f, 0.25f, 0.9f);
 
         currentStyle.setColor(ImGuiCol.MenuBarBg, 0, 0, 0, 0);
+        currentStyle.setColor(ImGuiCol.ModalWindowDimBg, 50, 50, 50, 50);
 
     }
 

@@ -21,14 +21,13 @@ public final class ResourcePool
     private static final Map<String, Shader> shaders = new HashMap<>();
     private static final Map<String, Texture> textures = new HashMap<>();
 
-    private static Shader mesh, light;
+    private static Shader mesh;
 
     public static Shader defaultMesh()
     {
         if(ResourcePool.mesh == null)
         {
-            ResourcePool.mesh = addAndGetShader("default.glsl");
-            ResourcePool.mesh.onStart();
+            ResourcePool.mesh = addAndGetShader("default");
             ResourcePool.mesh.storeUniforms
             (
                     // Vertex Data
@@ -56,44 +55,27 @@ public final class ResourcePool
         return ResourcePool.mesh;
     }
 
-    public static Shader defaultLight()
-    {
-        if(ResourcePool.light == null)
-        {
-            ResourcePool.light = addAndGetShader("blank.glsl");
-            ResourcePool.light.onStart();
-            ResourcePool.light.storeUniforms(ShaderConstants.projection, ShaderConstants.view,
-                    ShaderConstants.transformation);
-        }
-        return ResourcePool.light;
-    }
-
     public static Shader getShader(String resourceName)
     {
-        String path = Engine.resourcePath + "\\shaders\\" + resourceName;
-        return ResourcePool.shaders.getOrDefault(path, null);
+        return ResourcePool.shaders.getOrDefault(resourceName, null);
     }
 
     public static void addShader(String resourceName)
     {
-        String path = Engine.resourcePath + "\\shaders\\" + resourceName;
-        if(ResourcePool.shaders.containsKey(path))
+        if(ResourcePool.shaders.containsKey(resourceName))
             return;
 
-        Shader shader = new Shader(path);
-        shader.onStart();
-        ResourcePool.shaders.put(path, shader);
+        Shader shader = new Shader(resourceName);
+        ResourcePool.shaders.put(resourceName, shader);
     }
 
     public static Shader addAndGetShader(String resourceName)
     {
-        String path = Engine.resourcePath + "\\shaders\\" + resourceName;
-        if(ResourcePool.shaders.containsKey(path))
-            return ResourcePool.shaders.get(path);
+        if(ResourcePool.shaders.containsKey(resourceName))
+            return ResourcePool.shaders.get(resourceName);
 
-        Shader shader = new Shader(path);
-        shader.onStart();
-        ResourcePool.shaders.put(path, shader);
+        Shader shader = new Shader(resourceName);
+        ResourcePool.shaders.put(resourceName, shader);
         return shader;
     }
 
